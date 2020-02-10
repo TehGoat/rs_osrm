@@ -1,0 +1,22 @@
+[package]
+name = "rs_osrm"
+version = "0.1.0"
+license = "MIT"
+authors = ["Ronny Karlsson <mafiapro@live.se>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "rs_osrm"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rs_osrm_test"
+path = "main.rs"
+
+[dependencies]
+libc = "0.2.0"
+
+[build-dependencies]
+cmake = "0.1"
