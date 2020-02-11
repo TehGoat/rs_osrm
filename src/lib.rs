@@ -48,9 +48,9 @@ mod tests {
     #[test]
     fn it_works() {
         let mut config = EngineConfig::new();
-        config.set_storage_config("/home/tehkoza/osrm/sweden-latest.osrm");
+        config.set_storage_config("/home/ronny/osrm_data/sweden-latest.osrm");
         config.set_use_shared_memory(false);
-        config.set_algorithm(Algorithm::MLD);
+        //config.set_algorithm(Algorithm::MLD);
         let osrm = Osrm::new(&config);
 
         for _ in 0..1 {

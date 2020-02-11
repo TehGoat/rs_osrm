@@ -26,7 +26,7 @@ pub enum Status
 
 #[repr(C)]
 pub struct CWaypoint {
-    nodes: [u32; 2],
+    nodes: [i64; 2],
     hint: *const c_char,
     distance: f64,
     name: *const c_char,
@@ -34,7 +34,7 @@ pub struct CWaypoint {
 }
 
 pub struct Waypoint {
-    pub nodes: [u32; 2],
+    pub nodes: [i64; 2],
     pub hint: Option<String>,
     pub distance: f64,
     pub name: String,
