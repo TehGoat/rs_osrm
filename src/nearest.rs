@@ -117,8 +117,6 @@ impl NearestResult {
 
         let mut way_points: Option<Vec<Waypoint>> = None;
         if status == &Status::Ok && c_reasult.waypoints != null() {
-            println!("Not null");
-            println!("{}", (*c_reasult).number_of_waypoints);
             let array = unsafe { slice::from_raw_parts((*c_reasult).waypoints, (*c_reasult).number_of_waypoints as usize) };
 
             let mut waypoint_vec = Vec::with_capacity(array.len());

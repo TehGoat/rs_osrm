@@ -1,6 +1,6 @@
 [package]
 name = "rs_osrm"
-version = "0.1.0"
+version = "0.1.1"
 license = "MIT"
 authors = ["Ronny Karlsson <mafiapro@live.se>"]
 edition = "2018"
@@ -12,10 +12,6 @@ description = "rust wrapper for osrm"
 [lib]
 name = "rs_osrm"
 path = "src/lib.rs"
-
-[[bin]]
-name = "rs_osrm_test"
-path = "main.rs"
 
 [dependencies]
 libc = "0.2.0"
