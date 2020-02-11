@@ -1,19 +1,25 @@
 #![allow(dead_code)]
 
 use crate::Osrm;
-use std::ffi::{c_void, CString, CStr};
-use std::os::raw::c_char;
+use std::ffi::{c_void, CStr};
+use std::os::raw::{c_char, c_double, c_int, c_short, c_longlong};
 use std::ptr::null;
-use core::slice;
 
 #[link(name = "c_osrm")]
 extern {
-    fn nearest_request_create(latitude: f64, longitude: f64) -> *mut CNearestRequest;
+    fn nearest_request_create(latitude: c_double, longitude: c_double) -> *mut CNearestRequest;
     fn nearest_request_destroy(request: *mut CNearestRequest);
 
     fn nearest_result_destroy(result: *mut CNearestResult);
 
     fn osrm_nearest(osrm: *mut c_void, request: *mut CNearestRequest, result: *mut *mut CNearestResult) -> Status;
+}
+
+#[repr(C)]
+#[derive(Clone)]
+pub enum Boolean {
+    FALSE = 0,
+    TRUE = 1,
 }
 
 #[repr(C)]
@@ -25,15 +31,15 @@ pub enum Status
 }
 
 #[repr(C)]
-pub struct CWaypoint {
-    nodes: [i64; 2],
+pub struct CNearestWaypoint {
+    nodes: [c_longlong; 2],
     hint: *const c_char,
-    distance: f64,
+    distance: c_double,
     name: *const c_char,
-    location: [f64; 2]
+    location: [c_double; 2]
 }
 
-pub struct Waypoint {
+pub struct NearestWaypoint {
     pub nodes: [i64; 2],
     pub hint: Option<String>,
     pub distance: f64,
@@ -41,8 +47,8 @@ pub struct Waypoint {
     pub location: [f64; 2]
 }
 
-impl Waypoint {
-    pub fn new(c_waypoints: &CWaypoint) -> Waypoint {
+impl NearestWaypoint {
+    pub fn new(c_waypoints: &CNearestWaypoint) -> NearestWaypoint {
 
         let mut hint: Option<String> = None;
         if c_waypoints.hint != null() {
@@ -56,7 +62,7 @@ impl Waypoint {
         let c_name_str: &CStr = unsafe { CStr::from_ptr(c_name_buf) };
         let name_str_slice: &str = c_name_str.to_str().unwrap();
 
-        Waypoint {
+        NearestWaypoint {
             nodes: c_waypoints.nodes,
             hint,
             distance: c_waypoints.distance,
@@ -69,8 +75,8 @@ impl Waypoint {
 #[repr(C)]
 #[derive(Copy,Clone)]
 pub struct Bearing {
-    pub bearing: i8,
-    pub range: i8
+    pub bearing: c_short,
+    pub range: c_short
 }
 
 #[repr(C)]
@@ -81,18 +87,39 @@ pub enum Approach {
 }
 
 #[repr(C)]
+#[derive(Clone)]
+pub struct Coordinate{
+    latitude: c_double,
+    longitude: c_double
+}
+
+#[repr(C)]
+#[derive(Clone)]
+pub struct GeneralOptions{
+    coordinate: Coordinate,
+    number_of_coordinates: c_int,
+    bearings: *mut Bearing,
+    radiuses: *mut c_double,
+    generate_hints: Boolean,
+    hints: *mut c_char,
+    approach: *mut Approach,
+    exclude: *mut c_char,
+    number_of_excludes: c_int
+}
+
+#[repr(C)]
 pub struct CNearestResult
 {
-    code: *const c_char,
-    message: *const c_char,
-    waypoints: *const CWaypoint,
-    number_of_waypoints: i32
+    code: *mut c_char,
+    message: *mut c_char,
+    waypoints: *mut CNearestWaypoint,
+    number_of_waypoints: c_int
 }
 
 pub struct NearestResult {
     pub code: Option<String>,
     pub message: Option<String>,
-    pub way_points: Option<Vec<Waypoint>>
+    pub way_points: Option<Vec<NearestWaypoint>>
 }
 
 impl NearestResult {
@@ -100,7 +127,7 @@ impl NearestResult {
     pub fn new(c_reasult: &CNearestResult, status: &Status) -> NearestResult {
 
         let mut code: Option<String> = None;
-        if c_reasult.code != null() {
+        if c_reasult.code != std::ptr::null_mut() {
             let c_code_buf: *const c_char = c_reasult.code;
             let c_code_str: &CStr = unsafe { CStr::from_ptr(c_code_buf) };
             let code_str_slice: &str = c_code_str.to_str().unwrap();
@@ -108,25 +135,14 @@ impl NearestResult {
         }
 
         let mut message: Option<String> = None;
-        if c_reasult.message != null() {
+        if c_reasult.message != std::ptr::null_mut() {
             let c_code_buf: *const c_char = c_reasult.code;
             let c_code_str: &CStr = unsafe { CStr::from_ptr(c_code_buf) };
             let code_str_slice: &str = c_code_str.to_str().unwrap();
             message = Option::from(code_str_slice.to_owned());
         }
 
-        let mut way_points: Option<Vec<Waypoint>> = None;
-        if status == &Status::Ok && c_reasult.waypoints != null() {
-            let array = unsafe { slice::from_raw_parts((*c_reasult).waypoints, (*c_reasult).number_of_waypoints as usize) };
-
-            let mut waypoint_vec = Vec::with_capacity(array.len());
-
-            for waypoint in array {
-                waypoint_vec.push(Waypoint::new(waypoint));
-            }
-
-            way_points = Option::from(waypoint_vec);
-        }
+        let mut way_points: Option<Vec<NearestWaypoint>> = None;
 
         NearestResult{
             code,
@@ -139,15 +155,8 @@ impl NearestResult {
 
 #[repr(C)]
 struct CNearestRequest {
-    latitude: f64,
-    longitude: f64,
+    general_options: GeneralOptions,
     number_of_results: u32,
-    radius: f64,
-    bearing: *mut Bearing,
-    generate_hints: c_char,
-    hint: *const c_char,
-    approach: Approach,
-    exclude: *const c_char
 }
 
 pub struct NearestRequest {
@@ -173,7 +182,7 @@ impl NearestRequest {
                 generate_hints: true,
                 hint: None,
                 approach: Approach::UNRESTRICTED,
-                exclude: None
+                exclude: None,
             }
     }
 
@@ -181,9 +190,32 @@ impl NearestRequest {
         unsafe {
             let mut result: *mut CNearestResult = std::ptr::null_mut();
             let result_ptr : *mut *mut CNearestResult = &mut result;
-            let request = self.convert_to_c_mearest();
-            let status = osrm_nearest(*osrm.config, request, result_ptr);
-            nearest_request_destroy(request);
+
+            let mut asd = 123.0;
+
+            let mut request = CNearestRequest{
+                number_of_results: 1,
+                general_options: GeneralOptions{
+                    generate_hints: Boolean::FALSE,
+                    radiuses: &mut asd as *mut c_double,
+                    approach: std::ptr::null_mut(),
+                    exclude:  std::ptr::null_mut(),
+                    hints:  std::ptr::null_mut(),
+                    bearings:  std::ptr::null_mut(),
+                    number_of_coordinates: 1,
+                    number_of_excludes: 0,
+                    coordinate: Coordinate{
+                        latitude: self.latitude,
+                        longitude: self.longitude
+                    }
+                }
+            };
+
+
+
+            let status = osrm_nearest(*osrm.config, &mut request as *mut CNearestRequest, result_ptr);
+
+            //nearest_request_destroy(request);
 
             let converted_result = NearestResult::new(&(*result), &status);
 
@@ -198,26 +230,28 @@ impl NearestRequest {
         unsafe {
             let mut crequest = nearest_request_create(self.latitude, self.longitude);
             (*crequest).number_of_results = self.number_of_results;
-            (*crequest).radius = self.radius;
+            //self.radius = 1.0;
+            //(*crequest).general_options.radiuses = &mut self.radius;
 
-            if self.bearing.is_some() {
-                let mut bearing_box = Box::new(self.bearing.unwrap());
-                (*crequest).bearing = &mut *bearing_box;
-            }
-
-            if !self.generate_hints {
-                (*crequest).generate_hints = 0;
-            }
-
-            if self.hint.is_some() {
-                (*crequest).hint = CString::new(self.hint.as_ref().unwrap().as_str()).unwrap().as_ptr();
-            }
-
-            (*crequest).approach = self.approach.clone();
-
-            if self.exclude.is_some() {
-                (*crequest).exclude = CString::new(self.hint.as_ref().unwrap().as_str()).unwrap().as_ptr();
-            }
+//            if self.bearing.is_some() {
+//                let mut bearing_box = Box::new(self.bearing.unwrap());
+//                (*crequest).bearing = &mut *bearing_box;
+//            }
+//
+//            if !self.generate_hints {
+                (*crequest).general_options.generate_hints = Boolean::FALSE;
+//            }
+//
+//            if self.hint.is_some() {
+//                (*crequest).hint = CString::new(self.hint.as_ref().unwrap().as_str()).unwrap().as_ptr();
+//            }
+//
+//              let mut approach = &mut self.approach.clone() as *mut Approach;
+//              (*crequest).general_options.approach = &mut approach;
+//
+//            if self.exclude.is_some() {
+//                (*crequest).exclude = CString::new(self.hint.as_ref().unwrap().as_str()).unwrap().as_ptr();
+//            }
 
             crequest
         }
