@@ -1,9 +1,11 @@
 #![allow(dead_code)]
 
-use crate::Osrm;
-use std::ffi::{c_void, CStr};
+use crate::{Osrm, Boolean};
+use std::ffi::{c_void, CStr, CString};
 use std::os::raw::{c_char, c_double, c_int, c_short, c_longlong};
 use std::ptr::null;
+use std::borrow::ToOwned;
+use core::slice;
 
 #[link(name = "c_osrm")]
 extern {
@@ -15,12 +17,6 @@ extern {
     fn osrm_nearest(osrm: *mut c_void, request: *mut CNearestRequest, result: *mut *mut CNearestResult) -> Status;
 }
 
-#[repr(C)]
-#[derive(Clone)]
-pub enum Boolean {
-    FALSE = 0,
-    TRUE = 1,
-}
 
 #[repr(C)]
 #[derive(Debug, PartialEq)]
@@ -31,6 +27,7 @@ pub enum Status
 }
 
 #[repr(C)]
+#[derive(Clone)]
 pub struct CNearestWaypoint {
     nodes: [c_longlong; 2],
     hint: *const c_char,
@@ -144,6 +141,17 @@ impl NearestResult {
 
         let mut way_points: Option<Vec<NearestWaypoint>> = None;
 
+        if c_reasult.waypoints != std::ptr::null_mut() {
+            let test_vec = unsafe {slice::from_raw_parts(c_reasult.waypoints, c_reasult.number_of_waypoints as usize).to_vec()};
+
+            let mut rs_vec = Vec::new();
+            for waypoint in &test_vec {
+                rs_vec.push(NearestWaypoint::new(waypoint));
+            }
+
+            way_points = Option::from(rs_vec);
+        }
+
         NearestResult{
             code,
             message,
@@ -157,6 +165,49 @@ impl NearestResult {
 struct CNearestRequest {
     general_options: GeneralOptions,
     number_of_results: u32,
+}
+
+impl CNearestRequest {
+    fn new(request: &mut NearestRequest) -> CNearestRequest {
+        let mut c_request = CNearestRequest {
+            number_of_results: request.number_of_results,
+            general_options: GeneralOptions {
+                generate_hints: Boolean::from(request.generate_hints),
+                radiuses: std::ptr::null_mut(),//&mut request.radius as *mut c_double,
+                approach: std::ptr::null_mut(),//&mut request.approach,
+                exclude: std::ptr::null_mut(),
+                hints: std::ptr::null_mut(),
+                bearings: std::ptr::null_mut(),
+                number_of_coordinates: 1,
+                number_of_excludes: 0,
+                coordinate: Coordinate {
+                    latitude: request.latitude,
+                    longitude: request.longitude
+                }
+            }
+        };
+
+        match &mut request.hint {
+            Some(hint) => {
+                c_request.general_options.hints = hint.as_mut_ptr() as *mut i8
+            },
+            None => {}
+        }
+        match &mut request.exclude {
+            Some(exclude) => {
+                c_request.general_options.exclude = exclude.as_mut_ptr() as *mut i8
+            },
+            None => {}
+        }
+        match &mut request.bearing {
+            Some(bearing) => {
+                c_request.general_options.bearings = bearing
+            },
+            None => {}
+        }
+
+        c_request
+    }
 }
 
 pub struct NearestRequest {
@@ -177,7 +228,7 @@ impl NearestRequest {
                 latitude,
                 longitude,
                 number_of_results: 1,
-                radius: -1.0,
+                radius: std::f64::MAX,
                 bearing: None,
                 generate_hints: true,
                 hint: None,
@@ -191,31 +242,7 @@ impl NearestRequest {
             let mut result: *mut CNearestResult = std::ptr::null_mut();
             let result_ptr : *mut *mut CNearestResult = &mut result;
 
-            let mut asd = 123.0;
-
-            let mut request = CNearestRequest{
-                number_of_results: 1,
-                general_options: GeneralOptions{
-                    generate_hints: Boolean::FALSE,
-                    radiuses: &mut asd as *mut c_double,
-                    approach: std::ptr::null_mut(),
-                    exclude:  std::ptr::null_mut(),
-                    hints:  std::ptr::null_mut(),
-                    bearings:  std::ptr::null_mut(),
-                    number_of_coordinates: 1,
-                    number_of_excludes: 0,
-                    coordinate: Coordinate{
-                        latitude: self.latitude,
-                        longitude: self.longitude
-                    }
-                }
-            };
-
-
-
-            let status = osrm_nearest(*osrm.config, &mut request as *mut CNearestRequest, result_ptr);
-
-            //nearest_request_destroy(request);
+            let status = osrm_nearest(*osrm.config, &mut CNearestRequest::new(self) as *mut CNearestRequest, result_ptr);
 
             let converted_result = NearestResult::new(&(*result), &status);
 
@@ -225,35 +252,4 @@ impl NearestRequest {
         }
     }
 
-    //noinspection RsBorrowChecker
-    fn convert_to_c_mearest(&mut self) -> *mut CNearestRequest {
-        unsafe {
-            let mut crequest = nearest_request_create(self.latitude, self.longitude);
-            (*crequest).number_of_results = self.number_of_results;
-            //self.radius = 1.0;
-            //(*crequest).general_options.radiuses = &mut self.radius;
-
-//            if self.bearing.is_some() {
-//                let mut bearing_box = Box::new(self.bearing.unwrap());
-//                (*crequest).bearing = &mut *bearing_box;
-//            }
-//
-//            if !self.generate_hints {
-                (*crequest).general_options.generate_hints = Boolean::FALSE;
-//            }
-//
-//            if self.hint.is_some() {
-//                (*crequest).hint = CString::new(self.hint.as_ref().unwrap().as_str()).unwrap().as_ptr();
-//            }
-//
-//              let mut approach = &mut self.approach.clone() as *mut Approach;
-//              (*crequest).general_options.approach = &mut approach;
-//
-//            if self.exclude.is_some() {
-//                (*crequest).exclude = CString::new(self.hint.as_ref().unwrap().as_str()).unwrap().as_ptr();
-//            }
-
-            crequest
-        }
-    }
 }
