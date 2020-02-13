@@ -1,29 +1,18 @@
 #![allow(dead_code)]
 
-use crate::{Osrm, Boolean};
-use std::ffi::{c_void, CStr, CString};
-use std::os::raw::{c_char, c_double, c_int, c_short, c_longlong};
+use crate::{Osrm, Boolean, Status};
+use std::ffi::{c_void, CStr};
+use std::os::raw::{c_char, c_double, c_int, c_longlong};
 use std::ptr::null;
 use std::borrow::ToOwned;
 use core::slice;
+use crate::general::{Approach, Bearing, Coordinate, GeneralOptions};
 
 #[link(name = "c_osrm")]
 extern {
-    fn nearest_request_create(latitude: c_double, longitude: c_double) -> *mut CNearestRequest;
-    fn nearest_request_destroy(request: *mut CNearestRequest);
-
     fn nearest_result_destroy(result: *mut CNearestResult);
 
     fn osrm_nearest(osrm: *mut c_void, request: *mut CNearestRequest, result: *mut *mut CNearestResult) -> Status;
-}
-
-
-#[repr(C)]
-#[derive(Debug, PartialEq)]
-pub enum Status
-{
-    Ok = 0,
-    Error = 1
 }
 
 #[repr(C)]
@@ -70,41 +59,6 @@ impl NearestWaypoint {
 }
 
 #[repr(C)]
-#[derive(Copy,Clone)]
-pub struct Bearing {
-    pub bearing: c_short,
-    pub range: c_short
-}
-
-#[repr(C)]
-#[derive(Clone)]
-pub enum Approach {
-    UNRESTRICTED = 0,
-    CURB = 1,
-}
-
-#[repr(C)]
-#[derive(Clone)]
-pub struct Coordinate{
-    latitude: c_double,
-    longitude: c_double
-}
-
-#[repr(C)]
-#[derive(Clone)]
-pub struct GeneralOptions{
-    coordinate: Coordinate,
-    number_of_coordinates: c_int,
-    bearings: *mut Bearing,
-    radiuses: *mut c_double,
-    generate_hints: Boolean,
-    hints: *mut c_char,
-    approach: *mut Approach,
-    exclude: *mut c_char,
-    number_of_excludes: c_int
-}
-
-#[repr(C)]
 pub struct CNearestResult
 {
     code: *mut c_char,
@@ -121,7 +75,7 @@ pub struct NearestResult {
 
 impl NearestResult {
     //noinspection RsBorrowChecker
-    pub fn new(c_reasult: &CNearestResult, status: &Status) -> NearestResult {
+    pub fn new(c_reasult: &CNearestResult) -> NearestResult {
 
         let mut code: Option<String> = None;
         if c_reasult.code != std::ptr::null_mut() {
@@ -244,7 +198,7 @@ impl NearestRequest {
 
             let status = osrm_nearest(*osrm.config, &mut CNearestRequest::new(self) as *mut CNearestRequest, result_ptr);
 
-            let converted_result = NearestResult::new(&(*result), &status);
+            let converted_result = NearestResult::new(&(*result));
 
             nearest_result_destroy(result);
 

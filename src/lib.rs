@@ -3,12 +3,22 @@
 use std::os::raw::{c_void, c_char, c_int, c_double};
 
 pub mod nearest;
+pub mod general;
+pub mod table;
 
 
 #[link(name = "c_osrm")]
 extern {
     fn osrm_create(config: *mut EngineConfig) -> *mut c_void;
     fn osrm_destroy(osrm: *mut c_void);
+}
+
+#[repr(C)]
+#[derive(Debug, PartialEq)]
+pub enum Status
+{
+    Ok = 0,
+    Error = 1
 }
 
 #[repr(C)]
@@ -124,7 +134,7 @@ impl Drop for Osrm {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Osrm, EngineConfig, Boolean, Algorithm};
+    use crate::{Osrm, EngineConfig, Boolean, Algorithm, Status};
     use crate::nearest::*;
 
     //noinspection RsBorrowChecker
