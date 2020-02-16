@@ -70,7 +70,7 @@ pub struct CNearestResult
 pub struct NearestResult {
     pub code: Option<String>,
     pub message: Option<String>,
-    pub way_points: Option<Vec<NearestWaypoint>>
+    pub waypoints: Option<Vec<NearestWaypoint>>
 }
 
 impl NearestResult {
@@ -93,7 +93,7 @@ impl NearestResult {
             message = Option::from(code_str_slice.to_owned());
         }
 
-        let mut way_points: Option<Vec<NearestWaypoint>> = None;
+        let mut waypoints: Option<Vec<NearestWaypoint>> = None;
 
         if c_reasult.waypoints != std::ptr::null_mut() {
             let test_vec = unsafe {slice::from_raw_parts(c_reasult.waypoints, c_reasult.number_of_waypoints as usize).to_vec()};
@@ -103,13 +103,13 @@ impl NearestResult {
                 rs_vec.push(NearestWaypoint::new(waypoint));
             }
 
-            way_points = Option::from(rs_vec);
+            waypoints = Option::from(rs_vec);
         }
 
         NearestResult{
             code,
             message,
-            way_points
+            waypoints
         }
 
     }

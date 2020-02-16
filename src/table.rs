@@ -135,12 +135,12 @@ impl TableResult {
 
         let mut sources: Option<Vec<Waypoint>> = None;
         if c_reasult.sources != std::ptr::null_mut() {
-            let test_vec = unsafe {
+            let sources_vec = unsafe {
                 slice::from_raw_parts(c_reasult.sources, c_reasult.number_of_sources as usize).to_vec()
             };
 
             let mut rs_vec = Vec::new();
-            for source in &test_vec {
+            for source in &sources_vec {
                 rs_vec.push(Waypoint::new(source));
             }
 
@@ -149,12 +149,12 @@ impl TableResult {
 
         let mut destinations: Option<Vec<Waypoint>> = None;
         if c_reasult.destinations != std::ptr::null_mut() {
-            let test_vec = unsafe {
+            let destinations_vec = unsafe {
                 slice::from_raw_parts(c_reasult.destinations, c_reasult.number_of_destinations as usize).to_vec()
             };
 
             let mut rs_vec = Vec::new();
-            for destination in &test_vec {
+            for destination in &destinations_vec {
                 rs_vec.push(Waypoint::new(destination));
             }
 

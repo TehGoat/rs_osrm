@@ -5,6 +5,7 @@ use std::os::raw::{c_void, c_char, c_int, c_double};
 pub mod nearest;
 pub mod general;
 pub mod table;
+pub mod route;
 
 
 #[link(name = "c_osrm")]
@@ -136,8 +137,8 @@ impl Drop for Osrm {
 mod tests {
     use crate::{Osrm, EngineConfig, Boolean, Algorithm, Status};
     use crate::table::TableRequest;
-    use crate::{nearest::NearestRequest, general::Coordinate};
-   //#[test]
+    use crate::{nearest::NearestRequest, general::Coordinate, route::RouteRequest};
+   #[test]
    fn nearest_test() {
        let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
        config.use_shared_memory = Boolean::FALSE;
@@ -154,8 +155,8 @@ mod tests {
                println!("code: {}", result.1.code.unwrap());
            }
 
-           if result.1.way_points.is_some() {
-               for waypoint in result.1.way_points.unwrap() {
+           if result.1.waypoints.is_some() {
+               for waypoint in result.1.waypoints.unwrap() {
                    println!("lat: {}, lon: {}, name: {}", waypoint.location[1], waypoint.location[0], waypoint.name);
                }
            }
@@ -197,6 +198,7 @@ mod tests {
 
         let result = request.run(&osrm);
 
+
         if result.0 == Status::Ok {
             if result.1.code.is_some() {
                 println!("code: {}", result.1.code.unwrap());
@@ -221,6 +223,55 @@ mod tests {
             }
         }
 
+        assert_eq!(1,1);
+    }
+
+
+    #[test]
+    fn route_test() {
+        let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
+        config.use_shared_memory = Boolean::FALSE;
+        config.algorithm = Algorithm::MLD;
+        let osrm = Osrm::new(&mut config);
+
+        let request = RouteRequest::new(&vec![
+            Coordinate{
+                latitude: 57.804404,
+                longitude: 13.448601,
+            },
+            Coordinate{
+                latitude: 57.772140,
+                longitude: 13.408126,
+            },
+            Coordinate{
+                latitude: 57.672140,
+                longitude: 13.408126,
+            }
+        ]);
+
+        request.run(&osrm);
+
+        let result = request.run(&osrm);
+
+        if result.0 == Status::Ok {
+            if result.1.code.is_some() {
+                println!("code: {}", result.1.code.unwrap());
+            }
+            
+            if result.1.waypoints.is_some() {
+                for waypoint in result.1.waypoints.unwrap() {
+                    println!("lat: {}, lon: {}, name: {}", waypoint.location[1], waypoint.location[0], waypoint.name);
+                }
+            }
+            
+        } else {
+            if result.1.code.is_some() {
+                println!("code: {}", result.1.code.unwrap());
+            }
+            if result.1.message.is_some() {
+                println!("message: {}", result.1.message.unwrap());
+            }
+        }
         assert_eq!(1,1);
     }
 }
