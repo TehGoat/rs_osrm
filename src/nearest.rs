@@ -6,7 +6,7 @@ use std::os::raw::{c_char, c_double, c_int, c_longlong};
 use std::ptr::null;
 use std::borrow::ToOwned;
 use core::slice;
-use crate::general::{Approach, Bearing, Coordinate, GeneralOptions};
+use crate::general::{Approach, Bearing, Coordinate, CGeneralOptions};
 
 #[link(name = "c_osrm")]
 extern {
@@ -117,7 +117,7 @@ impl NearestResult {
 
 #[repr(C)]
 struct CNearestRequest {
-    general_options: GeneralOptions,
+    general_options: CGeneralOptions,
     number_of_results: u32,
 }
 
@@ -125,7 +125,7 @@ impl CNearestRequest {
     fn new(request: &mut NearestRequest) -> CNearestRequest {
         let mut c_request = CNearestRequest {
             number_of_results: request.number_of_results,
-            general_options: GeneralOptions {
+            general_options: CGeneralOptions {
                 generate_hints: Boolean::from(request.generate_hints),
                 radiuses: std::ptr::null_mut(),//&mut request.radius as *mut c_double,
                 approach: std::ptr::null_mut(),//&mut request.approach,
@@ -134,22 +134,19 @@ impl CNearestRequest {
                 bearings: std::ptr::null_mut(),
                 number_of_coordinates: 1,
                 number_of_excludes: 0,
-                coordinate: Coordinate {
-                    latitude: request.latitude,
-                    longitude: request.longitude
-                }
+                coordinate: &request.coordinate
             }
         };
 
         match &mut request.hint {
             Some(hint) => {
-                c_request.general_options.hints = hint.as_mut_ptr() as *mut i8
+                c_request.general_options.hints = hint.as_ptr() as *const c_char
             },
             None => {}
         }
         match &mut request.exclude {
             Some(exclude) => {
-                c_request.general_options.exclude = exclude.as_mut_ptr() as *mut i8
+                c_request.general_options.exclude = exclude.as_ptr() as *const *const c_char
             },
             None => {}
         }
@@ -165,8 +162,7 @@ impl CNearestRequest {
 }
 
 pub struct NearestRequest {
-    pub latitude: f64,
-    pub longitude: f64,
+    pub coordinate: Coordinate,
     pub number_of_results: u32,
     pub radius: f64,
     pub bearing: Option<Bearing>,
@@ -179,8 +175,10 @@ pub struct NearestRequest {
 impl NearestRequest {
     pub fn new(latitude: f64, longitude: f64) -> NearestRequest {
             NearestRequest {
-                latitude,
-                longitude,
+                coordinate: Coordinate{
+                    latitude,
+                    longitude
+                },
                 number_of_results: 1,
                 radius: std::f64::MAX,
                 bearing: None,

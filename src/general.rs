@@ -19,23 +19,88 @@ pub enum Approach {
 
 #[repr(C)]
 #[derive(Clone)]
-pub(crate)  struct Coordinate{
-    pub(crate) latitude: c_double,
-    pub(crate) longitude: c_double
+pub  struct Coordinate{
+    pub latitude: c_double,
+    pub longitude: c_double
 }
 
 #[repr(C)]
 #[derive(Clone)]
-pub struct GeneralOptions{
-    pub(crate)  coordinate: Coordinate,
+pub(crate) struct CGeneralOptions {
+    pub(crate) coordinate: *const Coordinate,
     pub(crate) number_of_coordinates: c_int,
-    pub(crate) bearings: *mut Bearing,
-    pub(crate) radiuses: *mut c_double,
+    pub(crate) bearings: *const Bearing,
+    pub(crate) radiuses: *const c_double,
     pub(crate) generate_hints: Boolean,
-    pub(crate) hints: *mut c_char,
-    pub(crate) approach: *mut Approach,
-    pub(crate) exclude: *mut c_char,
+    pub(crate) hints: *const c_char,
+    pub(crate) approach: *const Approach,
+    pub(crate) exclude: *const *const c_char,
     pub(crate) number_of_excludes: c_int
+}
+
+impl CGeneralOptions {
+    pub(crate) fn new(option: &GeneralOptions) -> CGeneralOptions {
+        let mut general_c_option = CGeneralOptions {
+            coordinate: option.coordinate.as_ptr(),
+            number_of_coordinates: option.coordinate.len() as c_int,
+            bearings: std::ptr::null(),
+            radiuses: std::ptr::null(),
+            generate_hints: Boolean::from(option.generate_hints),
+            hints: std::ptr::null(),
+            approach: std::ptr::null(),
+            exclude: std::ptr::null(),
+            number_of_excludes: 0
+        };
+
+        if option.bearings.is_some() {
+            general_c_option.bearings = option.bearings.as_ref().unwrap().as_ptr();
+        }
+
+        if option.radiuses.is_some() {
+            general_c_option.radiuses = option.radiuses.as_ref().unwrap().as_ptr();
+        }
+
+        if option.hints.is_some() {
+            general_c_option.hints = option.hints.as_ref().unwrap().as_ptr() as *const c_char;
+        }
+
+        if option.approach.is_some() {
+            general_c_option.approach = option.approach.as_ref().unwrap().as_ptr();
+        }
+
+        if option.exclude.is_some() {
+            let exclude = option.exclude.as_ref().unwrap();
+            general_c_option.exclude = exclude.as_ptr() as *const *const c_char;
+            general_c_option.number_of_excludes = exclude.len() as c_int;
+        }
+
+        general_c_option
+    }
+}
+
+#[derive(Clone)]
+pub struct GeneralOptions{
+    pub coordinate: Vec<Coordinate>,
+    pub bearings: Option<Vec<Bearing>>,
+    pub radiuses: Option<Vec<f64>>,
+    pub generate_hints: bool,
+    pub hints: Option<Vec<String>>,
+    pub approach: Option<Vec<Approach>>,
+    pub exclude: Option<Vec<String>>
+}
+
+impl GeneralOptions {
+    pub fn new(coordinates: &Vec<Coordinate>) -> GeneralOptions {
+        GeneralOptions {
+            coordinate: coordinates.clone(),
+            bearings: None,
+            radiuses: None,
+            generate_hints: true,
+            hints: None,
+            approach: None,
+            exclude: None,
+        }
+    }
 }
 
 #[repr(C)]
