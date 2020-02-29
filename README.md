@@ -12,7 +12,7 @@ It's in early development and there is still alot missing and being reworked!
 <ul>
   <li>nearest: Implemented</li>
   <li>table: Implemented</li>
-  <li>route: Not implemented</li>
+  <li>route: Implemented</li>
   <li>match: Not implemented</li>
   <li>trip: Not implemented</li>
   <li>tile: Not implemented</li>
