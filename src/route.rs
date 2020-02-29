@@ -1,7 +1,9 @@
+use crate::general::Route;
+use crate::general::Coordinate;
+use crate::general::COsrmRoute;
 use crate::Osrm;
 use std::ffi::CStr;
 use crate::general::Waypoint;
-use crate::general::Coordinate;
 use crate::general::{CGeneralOptions, CWaypoint, GeneralOptions};
 use std::os::raw::{c_int, c_char, c_void};
 use crate::{Status, Boolean};
@@ -22,7 +24,6 @@ pub enum GeometriesType
     Polyline6,
     GeoJSON
 }
-
 
 #[repr(C)]
 #[derive(Clone)]
@@ -72,9 +73,9 @@ struct CRouteRequest {
 }
 
 impl CRouteRequest {
-    fn new(request: &RouteRequest) -> CRouteRequest {
+    fn new(request: &mut RouteRequest) -> CRouteRequest {
         let mut c_request = CRouteRequest{
-            general_options: CGeneralOptions::new(&request.general_options),
+            general_options: CGeneralOptions::new(&mut request.general_options),
             steps: Boolean::from(request.steps),
             alternatives: Boolean::from(request.alternatives),
             number_of_alternatives: request.number_of_alternatives,
@@ -113,12 +114,15 @@ struct CRouteResult
     message: *const c_char,
     waypoints: *const CWaypoint,
     number_of_waypoints: c_int,
+    routes: *const COsrmRoute,
+    number_of_routes: c_int,
 }
 
 pub struct RouteResult {
     pub code: Option<String>,
     pub message: Option<String>,
-    pub waypoints: Option<Vec<Waypoint>>,
+    pub waypoints: Vec<Waypoint>,
+    pub routes: Vec<Route>
 }
 
 impl RouteResult {
@@ -140,24 +144,39 @@ impl RouteResult {
             message = Option::from(code_str_slice.to_owned());
         }
 
-        let mut waypoints: Option<Vec<Waypoint>> = None;
+        let mut waypoints: Vec<Waypoint> = Vec::new();
         if c_reasult.waypoints != std::ptr::null_mut() {
             let waypoints_vec = unsafe {
                 slice::from_raw_parts(c_reasult.waypoints, c_reasult.number_of_waypoints as usize).to_vec()
             };
 
-            let mut rs_vec = Vec::new();
             for waypoint in &waypoints_vec {
-                rs_vec.push(Waypoint::new(waypoint));
+                waypoints.push(Waypoint::new(waypoint));
             }
+        }
 
-            waypoints = Option::from(rs_vec);
+        let mut routes: Vec<Route> = Vec::new();
+        if c_reasult.routes != std::ptr::null_mut() {
+            let routes_vec = unsafe {
+                slice::from_raw_parts(c_reasult.routes, c_reasult.number_of_routes as usize).to_vec()
+            };
+
+            for route in routes_vec {
+                routes.push(route.to_route());
+            }
+        }
+
+        if c_reasult.routes != std::ptr::null_mut() {
+            println!("We got {} routes!", c_reasult.number_of_routes);
+        } else {
+            println!("Routes is null!");
         }
 
         RouteResult{
             code,
             message,
-            waypoints
+            waypoints,
+            routes
             
         }
 
@@ -193,7 +212,7 @@ impl RouteRequest {
         }
     }
 
-    pub fn run(&self, osrm: &Osrm) -> (Status, RouteResult) {
+    pub fn run(&mut self, osrm: &Osrm) -> (Status, RouteResult) {
         unsafe {
             let mut result: *mut CRouteResult = std::ptr::null_mut();
             let result_ptr : *mut *mut CRouteResult = &mut result;

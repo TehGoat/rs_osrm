@@ -1,12 +1,13 @@
 #![allow(dead_code)]
 
+use crate::general::Coordinate;
 use crate::{Osrm, Boolean, Status};
 use std::ffi::{c_void, CStr};
 use std::os::raw::{c_char, c_double, c_int, c_longlong};
 use std::ptr::null;
 use std::borrow::ToOwned;
 use core::slice;
-use crate::general::{Approach, Bearing, Coordinate, CGeneralOptions};
+use crate::general::{Approach, Bearing, CGeneralOptions};
 
 #[link(name = "c_osrm")]
 extern {
@@ -134,7 +135,7 @@ impl CNearestRequest {
                 bearings: std::ptr::null_mut(),
                 number_of_coordinates: 1,
                 number_of_excludes: 0,
-                coordinate: &request.coordinate
+                coordinate: &request.coordinate.to_ccoordinate()
             }
         };
 

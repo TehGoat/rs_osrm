@@ -30,7 +30,7 @@ pub enum Algorithm {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum Boolean {
     FALSE = 0,
     TRUE = 1
@@ -66,7 +66,7 @@ pub struct EngineConfig{
 impl EngineConfig {
     pub fn new(path: &str) -> EngineConfig {
         EngineConfig {
-            storage_config: path.as_ptr() as *mut i8,
+            storage_config: path.as_ptr() as *const i8,
             max_locations_trip: -1,
             max_locations_viaroute: -1,
             max_locations_distance_table: -1,
@@ -135,9 +135,10 @@ impl Drop for Osrm {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Osrm, EngineConfig, Boolean, Algorithm, Status};
-    use crate::table::TableRequest;
-    use crate::{nearest::NearestRequest, general::Coordinate, route::RouteRequest};
+    use crate::general::Coordinate;
+use crate::{Osrm, EngineConfig, Boolean, Algorithm, Status};
+    use crate::{nearest::NearestRequest, route::RouteRequest, table::TableRequest};
+    
    #[test]
    fn nearest_test() {
        let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
@@ -179,7 +180,7 @@ mod tests {
         config.algorithm = Algorithm::MLD;
         let osrm = Osrm::new(&mut config);
 
-        let request = TableRequest::new(&vec![
+        let mut request = TableRequest::new(&vec![
             Coordinate{
                 latitude: 57.804404,
                 longitude: 13.448601,
@@ -193,8 +194,6 @@ mod tests {
                 longitude: 13.408126,
             }
         ]);
-
-        request.run(&osrm);
 
         let result = request.run(&osrm);
 
@@ -229,15 +228,19 @@ mod tests {
 
     #[test]
     fn route_test() {
-        let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
-        config.use_shared_memory = Boolean::FALSE;
-        config.algorithm = Algorithm::MLD;
-        let osrm = Osrm::new(&mut config);
+       let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
+       config.use_shared_memory = Boolean::FALSE;
+       config.algorithm = Algorithm::MLD;
+       let osrm = Osrm::new(&mut config);
 
-        let request = RouteRequest::new(&vec![
+        let mut request = RouteRequest::new(&vec![
             Coordinate{
                 latitude: 57.804404,
                 longitude: 13.448601,
+            },
+            Coordinate{
+                latitude: 58.672140,
+                longitude: 13.408126,
             },
             Coordinate{
                 latitude: 57.772140,
@@ -258,10 +261,12 @@ mod tests {
                 println!("code: {}", result.1.code.unwrap());
             }
             
-            if result.1.waypoints.is_some() {
-                for waypoint in result.1.waypoints.unwrap() {
-                    println!("lat: {}, lon: {}, name: {}", waypoint.location[1], waypoint.location[0], waypoint.name);
-                }
+            for waypoint in result.1.waypoints {
+                println!("lat: {}, lon: {}, name: {}", waypoint.location[1], waypoint.location[0], waypoint.name);
+            }
+
+            for route in result.1.routes {
+                println!("duration: {}, distance: {}, weight: {}", route.duration, route.distance, route.weight);
             }
             
         } else {

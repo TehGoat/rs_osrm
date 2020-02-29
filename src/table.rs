@@ -1,6 +1,7 @@
+use crate::general::Coordinate;
 use std::ffi::CStr;
 use crate::general::Waypoint;
-use crate::general::{CGeneralOptions, CWaypoint, GeneralOptions, Coordinate};
+use crate::general::{CGeneralOptions, CWaypoint, GeneralOptions};
 use std::os::raw::{c_int, c_double, c_char, c_void};
 use crate::{Status, Osrm};
 use core::slice;
@@ -44,9 +45,9 @@ struct CTableRequest {
 }
 
 impl CTableRequest {
-    fn new(request: &TableRequest) -> CTableRequest {
+    fn new(request: &mut TableRequest) -> CTableRequest {
         let mut c_request = CTableRequest{
-            general_options: CGeneralOptions::new(&request.general_options),
+            general_options: CGeneralOptions::new(&mut request.general_options),
             sources: std::ptr::null(),
             number_of_sources: 0,
             destinations: std::ptr::null(),
@@ -196,7 +197,7 @@ impl TableRequest {
         }
     }
 
-    pub fn run(&self, osrm: &Osrm) -> (Status, TableResult) {
+    pub fn run(&mut self, osrm: &Osrm) -> (Status, TableResult) {
         unsafe {
             let mut result: *mut CTableResult = std::ptr::null_mut();
             let result_ptr : *mut *mut CTableResult = &mut result;
