@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use crate::general::GeneralOptions;
 use crate::general::Coordinate;
 use crate::{Osrm, Boolean, Status};
 use std::ffi::{c_void, CStr};
@@ -124,69 +125,26 @@ struct CNearestRequest {
 
 impl CNearestRequest {
     fn new(request: &mut NearestRequest) -> CNearestRequest {
-        let mut c_request = CNearestRequest {
+        CNearestRequest {
+            general_options: CGeneralOptions::new(&mut request.general_options),
             number_of_results: request.number_of_results,
-            general_options: CGeneralOptions {
-                generate_hints: Boolean::from(request.generate_hints),
-                radiuses: std::ptr::null_mut(),//&mut request.radius as *mut c_double,
-                approach: std::ptr::null_mut(),//&mut request.approach,
-                exclude: std::ptr::null_mut(),
-                hints: std::ptr::null_mut(),
-                bearings: std::ptr::null_mut(),
-                number_of_coordinates: 1,
-                number_of_excludes: 0,
-                coordinate: &request.coordinate.to_ccoordinate()
-            }
-        };
-
-        match &mut request.hint {
-            Some(hint) => {
-                c_request.general_options.hints = hint.as_ptr() as *const c_char
-            },
-            None => {}
         }
-        match &mut request.exclude {
-            Some(exclude) => {
-                c_request.general_options.exclude = exclude.as_ptr() as *const *const c_char
-            },
-            None => {}
-        }
-        match &mut request.bearing {
-            Some(bearing) => {
-                c_request.general_options.bearings = bearing
-            },
-            None => {}
-        }
-
-        c_request
     }
 }
 
 pub struct NearestRequest {
-    pub coordinate: Coordinate,
+    pub general_options: GeneralOptions,
     pub number_of_results: u32,
-    pub radius: f64,
-    pub bearing: Option<Bearing>,
-    pub generate_hints: bool,
-    pub hint: Option<String>,
-    pub approach: Approach,
-    pub exclude: Option<String>
 }
 
 impl NearestRequest {
     pub fn new(latitude: f64, longitude: f64) -> NearestRequest {
             NearestRequest {
-                coordinate: Coordinate{
+                general_options: GeneralOptions::new(&vec![Coordinate{
                     latitude,
                     longitude
-                },
+                }]),
                 number_of_results: 1,
-                radius: std::f64::MAX,
-                bearing: None,
-                generate_hints: true,
-                hint: None,
-                approach: Approach::UNRESTRICTED,
-                exclude: None,
             }
     }
 

@@ -60,7 +60,7 @@ pub struct EngineConfig{
     pub use_mmap: Boolean,
     pub algorithm: Algorithm,
     pub verbosity: *const c_char,
-    pub dataset_name: *const c_char
+    pub dataset_name: *const c_char 
 }
 
 impl EngineConfig {
