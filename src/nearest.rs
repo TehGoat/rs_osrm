@@ -2,13 +2,13 @@
 
 use crate::general::GeneralOptions;
 use crate::general::Coordinate;
-use crate::{Osrm, Boolean, Status};
+use crate::{Osrm, Status};
 use std::ffi::{c_void, CStr};
 use std::os::raw::{c_char, c_double, c_int, c_longlong};
 use std::ptr::null;
 use std::borrow::ToOwned;
 use core::slice;
-use crate::general::{Approach, Bearing, CGeneralOptions};
+use crate::general::{CGeneralOptions};
 
 #[link(name = "c_osrm")]
 extern {
