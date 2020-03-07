@@ -228,150 +228,150 @@ impl Drop for Osrm {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use crate::general::Coordinate;
-// use crate::{Osrm, EngineConfig, Boolean, Algorithm, Status};
-//     use crate::{nearest::NearestRequest, route::RouteRequest, table::TableRequest};
+#[cfg(test)]
+mod tests {
+    use crate::general::Coordinate;
+use crate::{Osrm, EngineConfig, Algorithm, Status};
+    use crate::{nearest::NearestRequest, route::RouteRequest, table::TableRequest};
     
-//    #[test]
-//    fn nearest_test() {
-//        let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
-//        config.use_shared_memory = Boolean::FALSE;
-//        config.algorithm = Algorithm::MLD;
-//        let osrm = Osrm::new(&mut config);
+   #[test]
+   fn nearest_test() {
+       let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
+       config.use_shared_memory = false;
+       config.algorithm = Algorithm::MLD;
+       let osrm = Osrm::new(&mut config);
 
-//        let mut request = NearestRequest::new(57.804404, 13.448601);
-//        request.number_of_results =  1;
+       let mut request = NearestRequest::new(57.804404, 13.448601);
+       request.number_of_results =  1;
 
-//        let result = request.run(&osrm);
+       let result = request.run(&osrm);
 
-//        if result.0 == Status::Ok {
-//            if result.1.code.is_some() {
-//                println!("code: {}", result.1.code.unwrap());
-//            }
+       if result.0 == Status::Ok {
+           if result.1.code.is_some() {
+               println!("code: {}", result.1.code.unwrap());
+           }
 
-//            if result.1.waypoints.is_some() {
-//                for waypoint in result.1.waypoints.unwrap() {
-//                    println!("lat: {}, lon: {}, name: {}", waypoint.location[1], waypoint.location[0], waypoint.name);
-//                }
-//            }
-//        } else {
-//            if result.1.code.is_some() {
-//                println!("code: {}", result.1.code.unwrap());
-//            }
-//            if result.1.message.is_some() {
-//                println!("message: {}", result.1.message.unwrap());
-//            }
-//        }
+           if result.1.waypoints.is_some() {
+               for waypoint in result.1.waypoints.unwrap() {
+                   println!("lat: {}, lon: {}, name: {}", waypoint.location[1], waypoint.location[0], waypoint.name);
+               }
+           }
+       } else {
+           if result.1.code.is_some() {
+               println!("code: {}", result.1.code.unwrap());
+           }
+           if result.1.message.is_some() {
+               println!("message: {}", result.1.message.unwrap());
+           }
+       }
 
-//        assert_eq!(1,1);
-//    }
+       assert_eq!(1,1);
+   }
 
-//     #[test]
-//     fn table_test() {
-//         let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
-//         config.use_shared_memory = Boolean::FALSE;
-//         config.algorithm = Algorithm::MLD;
-//         let osrm = Osrm::new(&mut config);
+    #[test]
+    fn table_test() {
+        let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
+        config.use_shared_memory = false;
+        config.algorithm = Algorithm::MLD;
+        let osrm = Osrm::new(&mut config);
 
-//         let mut request = TableRequest::new(&vec![
-//             Coordinate{
-//                 latitude: 57.804404,
-//                 longitude: 13.448601,
-//             },
-//             Coordinate{
-//                 latitude: 57.772140,
-//                 longitude: 13.408126,
-//             },
-//             Coordinate{
-//                 latitude: 57.672140,
-//                 longitude: 13.408126,
-//             }
-//         ]);
+        let mut request = TableRequest::new(&vec![
+            Coordinate{
+                latitude: 57.804404,
+                longitude: 13.448601,
+            },
+            Coordinate{
+                latitude: 57.772140,
+                longitude: 13.408126,
+            },
+            Coordinate{
+                latitude: 57.672140,
+                longitude: 13.408126,
+            }
+        ]);
 
-//         let result = request.run(&osrm);
+        let result = request.run(&osrm);
 
 
-//         if result.0 == Status::Ok {
-//             if result.1.code.is_some() {
-//                 println!("code: {}", result.1.code.unwrap());
-//             }
+        if result.0 == Status::Ok {
+            if result.1.code.is_some() {
+                println!("code: {}", result.1.code.unwrap());
+            }
             
-//             if result.1.durations.is_some() {
-//                 for durations in result.1.durations.as_ref().unwrap() {
-//                         print!("[");
-//                         for duration in durations {
-//                             print!(" {} ", duration)
-//                         }
-//                     println!("]");
-//                 }
-//             }
+            if result.1.durations.is_some() {
+                for durations in result.1.durations.as_ref().unwrap() {
+                        print!("[");
+                        for duration in durations {
+                            print!(" {} ", duration)
+                        }
+                    println!("]");
+                }
+            }
             
-//         } else {
-//             if result.1.code.is_some() {
-//                 println!("code: {}", result.1.code.unwrap());
-//             }
-//             if result.1.message.is_some() {
-//                 println!("message: {}", result.1.message.unwrap());
-//             }
-//         }
+        } else {
+            if result.1.code.is_some() {
+                println!("code: {}", result.1.code.unwrap());
+            }
+            if result.1.message.is_some() {
+                println!("message: {}", result.1.message.unwrap());
+            }
+        }
 
-//         assert_eq!(1,1);
-//     }
+        assert_eq!(1,1);
+    }
 
 
-//     #[test]
-//     fn route_test() {
-//        let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
-//        config.use_shared_memory = Boolean::FALSE;
-//        config.algorithm = Algorithm::MLD;
-//        let osrm = Osrm::new(&mut config);
+    #[test]
+    fn route_test() {
+       let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
+       config.use_shared_memory = false;
+       config.algorithm = Algorithm::MLD;
+       let osrm = Osrm::new(&mut config);
 
-//         let mut request = RouteRequest::new(&vec![
-//             Coordinate{
-//                 latitude: 57.804404,
-//                 longitude: 13.448601,
-//             },
-//             Coordinate{
-//                 latitude: 58.672140,
-//                 longitude: 13.408126,
-//             },
-//             Coordinate{
-//                 latitude: 57.772140,
-//                 longitude: 13.408126,
-//             },
-//             Coordinate{
-//                 latitude: 57.672140,
-//                 longitude: 13.408126,
-//             }
-//         ]);
+        let mut request = RouteRequest::new(&vec![
+            Coordinate{
+                latitude: 57.804404,
+                longitude: 13.448601,
+            },
+            Coordinate{
+                latitude: 58.672140,
+                longitude: 13.408126,
+            },
+            Coordinate{
+                latitude: 57.772140,
+                longitude: 13.408126,
+            },
+            Coordinate{
+                latitude: 57.672140,
+                longitude: 13.408126,
+            }
+        ]);
 
-//         request.run(&osrm);
+        request.run(&osrm);
 
-//         let result = request.run(&osrm);
+        let result = request.run(&osrm);
 
-//         if result.0 == Status::Ok {
-//             if result.1.code.is_some() {
-//                 println!("code: {}", result.1.code.unwrap());
-//             }
+        if result.0 == Status::Ok {
+            if result.1.code.is_some() {
+                println!("code: {}", result.1.code.unwrap());
+            }
             
-//             for waypoint in result.1.waypoints {
-//                 println!("lat: {}, lon: {}, name: {}", waypoint.location[1], waypoint.location[0], waypoint.name);
-//             }
+            for waypoint in result.1.waypoints {
+                println!("lat: {}, lon: {}, name: {}", waypoint.location[1], waypoint.location[0], waypoint.name);
+            }
 
-//             for route in result.1.routes {
-//                 println!("duration: {}, distance: {}, weight: {}", route.duration, route.distance, route.weight);
-//             }
+            for route in result.1.routes {
+                println!("duration: {}, distance: {}, weight: {}", route.duration, route.distance, route.weight);
+            }
             
-//         } else {
-//             if result.1.code.is_some() {
-//                 println!("code: {}", result.1.code.unwrap());
-//             }
-//             if result.1.message.is_some() {
-//                 println!("message: {}", result.1.message.unwrap());
-//             }
-//         }
-//         assert_eq!(1,1);
-//     }
-// }
+        } else {
+            if result.1.code.is_some() {
+                println!("code: {}", result.1.code.unwrap());
+            }
+            if result.1.message.is_some() {
+                println!("message: {}", result.1.message.unwrap());
+            }
+        }
+        assert_eq!(1,1);
+    }
+}

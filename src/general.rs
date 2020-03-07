@@ -1,3 +1,4 @@
+use std::ffi::CString;
 use std::os::raw::{c_short, c_double, c_int, c_char};
 use crate::Boolean;
 use std::ptr::null;
@@ -92,8 +93,8 @@ pub(crate) struct COsrmIntersections {
     pub(crate) number_of_classes: c_int,
     pub(crate) entry: *const Boolean,
     pub(crate) number_of_entries: c_int,
-    pub(crate) intersection_in: i128,
-    pub(crate) intersection_out: i128,
+    pub(crate) intersection_in: c_int,
+    pub(crate) intersection_out: c_int,
     pub(crate) lanes: *const COsrmLanes,
     pub(crate) number_of_lanes: c_int
 }
@@ -155,8 +156,8 @@ pub struct Intersections {
     pub bearings: Vec<i32>,
     pub classes: Vec<String>,
     pub entry: Vec<bool>,
-    pub intersection_in: i128,
-    pub intersection_out: i128,
+    pub intersection_in: i32,
+    pub intersection_out: i32,
     pub lanes: Vec<Lanes>
 }
 
@@ -302,7 +303,7 @@ pub(crate) struct COsrmAnnotation {
     pub(crate) distance: *const c_double,
     pub(crate) speed: *const c_double,
     pub(crate) weight: *const c_double,
-    pub(crate) nodes: *const i128,
+    pub(crate) nodes: *const i64,
     pub(crate) datasources: *const c_int,
     pub(crate) metadata: *const COsrmMetaData,
     pub(crate) number_of_coordinates: c_int,
@@ -369,7 +370,7 @@ pub struct Annotation {
     pub distance: Vec<f64>,
     pub speed: Vec<f64>,
     pub weight: Vec<f64>,
-    pub nodes: Vec<i128>,
+    pub nodes: Vec<i64>,
     pub datasources: Vec<i32>,
     pub metadata: Option<MetaData>,
 }
@@ -480,7 +481,7 @@ pub(crate) struct CGeneralOptions {
     pub(crate) radiuses: *const c_double,
     pub(crate) generate_hints: Boolean,
     pub(crate) skip_waypoints: Boolean,
-    pub(crate) hints: *const c_char,
+    pub(crate) hints: *const *const c_char,
     pub(crate) approach: *const Approach,
     pub(crate) exclude: *const *const c_char,
     pub(crate) number_of_excludes: c_int
@@ -511,7 +512,12 @@ impl CGeneralOptions {
         }
 
         if option.hints.is_some() {
-            general_c_option.hints = option.hints.as_ref().unwrap().as_ptr() as *const c_char;
+            let mut c_hint_vec = Vec::new();
+            for hint in option.hints.as_ref().unwrap() {
+                c_hint_vec.push(CString::new(hint.clone()).unwrap());   
+            }
+            option.c_hints = Option::from(c_hint_vec);
+            general_c_option.hints = option.c_hints.as_ref().unwrap().as_ptr() as *const *const  c_char;
         }
 
         if option.approach.is_some() {
@@ -519,9 +525,13 @@ impl CGeneralOptions {
         }
 
         if option.exclude.is_some() {
-            let exclude = option.exclude.as_ref().unwrap();
-            general_c_option.exclude = exclude.as_ptr() as *const *const c_char;
-            general_c_option.number_of_excludes = exclude.len() as c_int;
+            let mut c_exclude_vec = Vec::new();
+            for exclude in option.exclude.as_ref().unwrap() {
+                c_exclude_vec.push(CString::new(exclude.clone()).unwrap());   
+            }
+            option.c_exclude = Option::from(c_exclude_vec);
+            general_c_option.exclude = option.c_exclude.as_ref().unwrap().as_ptr() as *const *const c_char;
+            general_c_option.number_of_excludes = option.exclude.as_ref().unwrap().len() as c_int;
         }
 
         general_c_option
@@ -537,8 +547,10 @@ pub struct GeneralOptions{
     pub generate_hints: bool,
     pub skip_waypoints: bool,
     pub hints: Option<Vec<String>>,
+    pub(crate) c_hints: Option<Vec<CString>>,
     pub approach: Option<Vec<Approach>>,
-    pub exclude: Option<Vec<String>>
+    pub exclude: Option<Vec<String>>,
+    pub(crate) c_exclude: Option<Vec<CString>>,
 }
 
 impl GeneralOptions {
@@ -551,8 +563,10 @@ impl GeneralOptions {
             generate_hints: true,
             skip_waypoints: false,
             hints: None,
+            c_hints: None,
             approach: None,
             exclude: None,
+            c_exclude: None,
         }
     }
 }
