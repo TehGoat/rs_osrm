@@ -15,6 +15,6 @@ It's in early development and there is still alot missing and being reworked!
   <li>route: Implemented</li>
   <li>match: Implemented</li>
   <li>trip: Implemented</li>
-  <li>tile: Not implemented</li>
+  <li>tile: Implemented</li>
   <li>Documentation: Non existing</li>
 </ul>

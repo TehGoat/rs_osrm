@@ -53,6 +53,9 @@
         "thread": "cpp",
         "cinttypes": "cpp",
         "bit": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "variant": "cpp",
+        "future": "cpp",
+        "regex": "cpp"
     }
 }

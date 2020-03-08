@@ -10,6 +10,7 @@ pub mod table;
 pub mod route;
 pub mod match_api;
 pub mod trip;
+pub mod tile;
 
 
 #[link(name = "c_osrm")]
@@ -234,7 +235,8 @@ impl Drop for Osrm {
 mod tests {
     use crate::general::Coordinate;
 use crate::{Osrm, EngineConfig, Algorithm, Status};
-    use crate::{nearest::NearestRequest, route::RouteRequest, table::TableRequest, match_api::MatchRequest, trip::TripRequest};
+    use crate::{nearest::NearestRequest, route::RouteRequest, table::TableRequest, match_api::MatchRequest, trip::TripRequest, tile::TileRequest};
+    use std::{io::Write, fs::File};
     
    #[test]
    fn nearest_test() {
@@ -473,6 +475,30 @@ use crate::{Osrm, EngineConfig, Algorithm, Status};
             if result.1.message.is_some() {
                 println!("message: {}", result.1.message.unwrap());
             }
+        }
+        assert_eq!(1,1);
+    }
+
+    #[test]
+    fn tile_test() {
+       let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
+       config.use_shared_memory = false;
+       config.algorithm = Algorithm::MLD;
+       let osrm = Osrm::new(&mut config);
+
+        let mut request = TileRequest::new(35342,19818, 16);
+
+        request.run(&osrm);
+
+        let result = request.run(&osrm);
+
+        if result.0 == Status::Ok {
+            println!("Tile Ok!");
+            let mut buffer = File::create("/home/tehkoza/foo.txt").expect("Faile to create file!");
+            
+            buffer.write(&result.1.result).expect("Failed to write data!");
+        } else {
+            println!("Tile Failed!");
         }
         assert_eq!(1,1);
     }
