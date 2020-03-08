@@ -108,10 +108,10 @@ impl TableResult {
 
         let mut message: Option<String> = None;
         if c_reasult.message != std::ptr::null_mut() {
-            let c_code_buf: *const c_char = c_reasult.code;
-            let c_code_str: &CStr = unsafe { CStr::from_ptr(c_code_buf) };
-            let code_str_slice: &str = c_code_str.to_str().unwrap();
-            message = Option::from(code_str_slice.to_owned());
+            let c_message_buf: *const c_char = c_reasult.message;
+            let c_message_str: &CStr = unsafe { CStr::from_ptr(c_message_buf) };
+            let message_str_slice: &str = c_message_str.to_str().unwrap();
+            message = Option::from(message_str_slice.to_owned());
         }
 
         let mut durations: Option<Vec<Vec<f64>>> = None;

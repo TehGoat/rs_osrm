@@ -8,6 +8,7 @@ pub mod nearest;
 pub mod general;
 pub mod table;
 pub mod route;
+pub mod match_api;
 
 
 #[link(name = "c_osrm")]
@@ -232,7 +233,7 @@ impl Drop for Osrm {
 mod tests {
     use crate::general::Coordinate;
 use crate::{Osrm, EngineConfig, Algorithm, Status};
-    use crate::{nearest::NearestRequest, route::RouteRequest, table::TableRequest};
+    use crate::{nearest::NearestRequest, route::RouteRequest, table::TableRequest, match_api::MatchRequest};
     
    #[test]
    fn nearest_test() {
@@ -361,6 +362,52 @@ use crate::{Osrm, EngineConfig, Algorithm, Status};
             }
 
             for route in result.1.routes {
+                println!("duration: {}, distance: {}, weight: {}", route.duration, route.distance, route.weight);
+            }
+            
+        } else {
+            if result.1.code.is_some() {
+                println!("code: {}", result.1.code.unwrap());
+            }
+            if result.1.message.is_some() {
+                println!("message: {}", result.1.message.unwrap());
+            }
+        }
+        assert_eq!(1,1);
+    }
+
+    #[test]
+    fn match_test() {
+       let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
+       config.use_shared_memory = false;
+       config.algorithm = Algorithm::MLD;
+       let osrm = Osrm::new(&mut config);
+
+        let mut request = MatchRequest::new(&vec![
+            Coordinate{
+                latitude: 57.781092,
+                longitude: 13.429555,
+            },
+            Coordinate{
+                latitude: 57.781123,
+                longitude: 13.427192,
+            }
+        ]);
+
+        request.run(&osrm);
+
+        let result = request.run(&osrm);
+
+        if result.0 == Status::Ok {
+            if result.1.code.is_some() {
+                println!("code: {}", result.1.code.unwrap());
+            }
+            
+            for waypoint in result.1.tracepoints {
+                println!("lat: {}, lon: {}, name: {}", waypoint.location[1], waypoint.location[0], waypoint.name);
+            }
+
+            for route in result.1.matchings {
                 println!("duration: {}, distance: {}, weight: {}", route.duration, route.distance, route.weight);
             }
             
