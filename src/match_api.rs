@@ -1,3 +1,5 @@
+use std::os::raw::c_double;
+use std::os::raw::c_char;
 use crate::general::c_string_to_option_string;
 use crate::general::Coordinate;
 use crate::Osrm;
@@ -6,8 +8,6 @@ use core::ffi::c_void;
 use crate::general::RouteLeg;
 use crate::general::c_string_to_string;
 use crate::general::COsrmRouteLeg;
-use libc::c_double;
-use libc::c_char;
 use crate::general::GeneralOptions;
 use crate::route::OverviewType;
 use crate::route::GeometriesType;

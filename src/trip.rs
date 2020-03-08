@@ -1,5 +1,5 @@
+use std::os::raw::c_double;
 use crate::general::c_string_to_string;
-use libc::c_double;
 use crate::route::OverviewType;
 use crate::route::GeometriesType;
 use crate::route::AnnotationsType;
