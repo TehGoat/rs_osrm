@@ -1,6 +1,6 @@
 [package]
 name = "rs_osrm"
-version = "0.6.0"
+version = "1.0.0"
 license = "MIT"
 authors = ["Ronny Karlsson <mafiapro@live.se>"]
 edition = "2018"
