@@ -9,6 +9,7 @@ pub mod general;
 pub mod table;
 pub mod route;
 pub mod match_api;
+pub mod trip;
 
 
 #[link(name = "c_osrm")]
@@ -233,7 +234,7 @@ impl Drop for Osrm {
 mod tests {
     use crate::general::Coordinate;
 use crate::{Osrm, EngineConfig, Algorithm, Status};
-    use crate::{nearest::NearestRequest, route::RouteRequest, table::TableRequest, match_api::MatchRequest};
+    use crate::{nearest::NearestRequest, route::RouteRequest, table::TableRequest, match_api::MatchRequest, trip::TripRequest};
     
    #[test]
    fn nearest_test() {
@@ -421,4 +422,59 @@ use crate::{Osrm, EngineConfig, Algorithm, Status};
         }
         assert_eq!(1,1);
     }
+
+    #[test]
+    fn trip_test() {
+       let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
+       config.use_shared_memory = false;
+       config.algorithm = Algorithm::MLD;
+       let osrm = Osrm::new(&mut config);
+
+        let mut request = TripRequest::new(&vec![
+            Coordinate{
+                latitude: 57.804404,
+                longitude: 13.448601,
+            },
+            Coordinate{
+                latitude: 58.672140,
+                longitude: 13.408126,
+            },
+            Coordinate{
+                latitude: 57.772140,
+                longitude: 13.408126,
+            },
+            Coordinate{
+                latitude: 57.672140,
+                longitude: 13.408126,
+            }
+        ]);
+
+        request.run(&osrm);
+
+        let result = request.run(&osrm);
+
+        if result.0 == Status::Ok {
+            if result.1.code.is_some() {
+                println!("code: {}", result.1.code.unwrap());
+            }
+            
+            for waypoint in result.1.waypoints {
+                println!("lat: {}, lon: {}, name: {}", waypoint.location[1], waypoint.location[0], waypoint.name);
+            }
+
+            for route in result.1.trips {
+                println!("duration: {}, distance: {}, weight: {}", route.duration, route.distance, route.weight);
+            }
+            
+        } else {
+            if result.1.code.is_some() {
+                println!("code: {}", result.1.code.unwrap());
+            }
+            if result.1.message.is_some() {
+                println!("message: {}", result.1.message.unwrap());
+            }
+        }
+        assert_eq!(1,1);
+    }
+
 }
