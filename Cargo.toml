@@ -16,7 +16,6 @@ name = "rs_osrm"
 path = "src/lib.rs"
 
 [dependencies]
-libc = "0.2.0"
 
 [build-dependencies]
 cmake = "0.1"

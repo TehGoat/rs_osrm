@@ -64,9 +64,9 @@ pub(crate) fn to_vec_ccoordinate(coordinates: &Vec<Coordinate>) -> Vec<COsrmCoor
 
 #[repr(C)]
 #[derive(Clone)]
-pub  struct COsrmLanes{
-    pub indications: *const *const c_char,
-    pub valid: Boolean
+pub(crate)  struct COsrmLanes{
+    pub(crate) indications: *const *const c_char,
+    pub(crate) valid: Boolean
 }
 
 impl COsrmLanes {
@@ -573,11 +573,11 @@ impl GeneralOptions {
 
 #[repr(C)]
 #[derive(Clone)]
-pub struct CWaypoint {
-    hint: *const c_char,
-    distance: c_double,
-    name: *const c_char,
-    location: [c_double; 2]
+pub(crate) struct CWaypoint {
+    pub(crate) hint: *const c_char,
+    pub(crate) distance: c_double,
+    pub(crate) name: *const c_char,
+    pub(crate) location: [c_double; 2]
 }
 
 pub struct Waypoint {
@@ -588,7 +588,7 @@ pub struct Waypoint {
 }
 
 impl Waypoint {
-    pub fn new(c_waypoints: &CWaypoint) -> Waypoint {
+    pub(crate) fn new(c_waypoints: &CWaypoint) -> Waypoint {
 
         let mut hint: Option<String> = None;
         if c_waypoints.hint != null() {
