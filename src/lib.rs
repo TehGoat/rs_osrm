@@ -231,6 +231,10 @@ impl Drop for Osrm {
     }
 }
 
+unsafe impl Send for Osrm {
+    
+}
+
 #[cfg(test)]
 mod tests {
     use crate::general::Coordinate;
