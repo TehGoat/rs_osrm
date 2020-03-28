@@ -1,37 +1,39 @@
-use std::os::raw::c_double;
 use crate::general::c_string_to_string;
-use crate::route::OverviewType;
-use crate::route::GeometriesType;
-use crate::route::AnnotationsType;
-use crate::general::Route;
-use crate::general::Coordinate;
 use crate::general::COsrmRoute;
-use crate::Osrm;
-use std::ffi::CStr;
+use crate::general::Coordinate;
+use crate::general::Route;
 use crate::general::{CGeneralOptions, GeneralOptions};
-use std::os::raw::{c_int, c_char, c_void};
-use crate::{Status, Boolean};
+use crate::route::AnnotationsType;
+use crate::route::GeometriesType;
+use crate::route::OverviewType;
+use crate::Osrm;
+use crate::{Boolean, Status};
 use core::slice;
+use std::ffi::CStr;
+use std::os::raw::c_double;
+use std::os::raw::{c_char, c_int, c_void};
 
 #[link(name = "c_osrm")]
-extern {
+extern "C" {
     fn trip_result_destroy(result: *mut CTripResult);
 
-    fn osrm_trip(osrm: *mut c_void, request: *mut CTripRequest, result: *mut *mut CTripResult) -> Status;
+    fn osrm_trip(
+        osrm: *mut c_void,
+        request: *mut CTripRequest,
+        result: *mut *mut CTripResult,
+    ) -> Status;
 }
 
 #[repr(C)]
 #[derive(Clone)]
-pub enum trip_start
-{
+pub enum trip_start {
     StartAny,
     First,
 }
 
 #[repr(C)]
 #[derive(Clone)]
-pub enum trip_end
-{
+pub enum trip_end {
     EndAny,
     Last,
 }
@@ -44,7 +46,7 @@ struct CTripWaypoint {
     name: *const c_char,
     location: [c_double; 2],
     trips_index: c_int,
-    waypoint_index: c_int
+    waypoint_index: c_int,
 }
 
 pub struct TripWaypoint {
@@ -53,12 +55,11 @@ pub struct TripWaypoint {
     pub name: String,
     pub location: [f64; 2],
     pub trips_index: i32,
-    pub waypoint_index: i32
+    pub waypoint_index: i32,
 }
 
 impl TripWaypoint {
     fn new(c_waypoints: &CTripWaypoint) -> TripWaypoint {
-
         let mut hint: Option<String> = None;
         if c_waypoints.hint != std::ptr::null() {
             hint = Option::from(c_string_to_string(c_waypoints.hint));
@@ -90,7 +91,7 @@ struct CTripRequest {
 
 impl CTripRequest {
     fn new(request: &mut TripRequest) -> CTripRequest {
-        CTripRequest{
+        CTripRequest {
             general_options: CGeneralOptions::new(&mut request.general_options),
             roundtrip: Boolean::from(request.roundtrip),
             source: request.source.clone(),
@@ -99,7 +100,7 @@ impl CTripRequest {
             annotations: Boolean::from(request.annotations),
             annotations_type: request.annotations_type.clone(),
             geometries: request.geometries.clone(),
-            overview: request.overview.clone()
+            overview: request.overview.clone(),
         }
     }
 }
@@ -109,16 +110,16 @@ pub struct TripRequest {
     roundtrip: bool,
     source: trip_start,
     destination: trip_end,
-    steps: bool, 
+    steps: bool,
     annotations: bool,
     annotations_type: AnnotationsType,
     geometries: GeometriesType,
-    overview: OverviewType
+    overview: OverviewType,
 }
 
 impl TripRequest {
-    pub fn new(coordinates: &Vec<Coordinate>) -> TripRequest{
-        TripRequest{
+    pub fn new(coordinates: &Vec<Coordinate>) -> TripRequest {
+        TripRequest {
             general_options: GeneralOptions::new(coordinates),
             roundtrip: true,
             source: trip_start::StartAny,
@@ -127,32 +128,32 @@ impl TripRequest {
             annotations: false,
             annotations_type: AnnotationsType::None,
             geometries: GeometriesType::Polyline,
-            overview: OverviewType::Simplified
+            overview: OverviewType::Simplified,
         }
     }
 
     pub fn run(&mut self, osrm: &Osrm) -> (Status, TripResult) {
         unsafe {
             let mut result: *mut CTripResult = std::ptr::null_mut();
-            let result_ptr : *mut *mut CTripResult = &mut result;
+            let result_ptr: *mut *mut CTripResult = &mut result;
 
-            let status = osrm_trip(*osrm.config,
-                                    &mut CTripRequest::new(self) as *mut CTripRequest,
-                                    result_ptr);
+            let status = osrm_trip(
+                *osrm.config,
+                &mut CTripRequest::new(self) as *mut CTripRequest,
+                result_ptr,
+            );
 
             let converted_result = TripResult::new(&(*result));
 
             trip_result_destroy(result);
 
             (status, converted_result)
-
         }
     }
 }
 
 #[repr(C)]
-struct CTripResult
-{
+struct CTripResult {
     code: *const c_char,
     message: *const c_char,
     waypoints: *const CTripWaypoint,
@@ -165,12 +166,11 @@ pub struct TripResult {
     pub code: Option<String>,
     pub message: Option<String>,
     pub waypoints: Vec<TripWaypoint>,
-    pub trips: Vec<Route>
+    pub trips: Vec<Route>,
 }
 
 impl TripResult {
     fn new(c_reasult: &CTripResult) -> TripResult {
-
         let mut code: Option<String> = None;
         if c_reasult.code != std::ptr::null_mut() {
             let c_code_buf: *const c_char = c_reasult.code;
@@ -190,7 +190,8 @@ impl TripResult {
         let mut waypoints: Vec<TripWaypoint> = Vec::new();
         if c_reasult.waypoints != std::ptr::null_mut() {
             let waypoints_vec = unsafe {
-                slice::from_raw_parts(c_reasult.waypoints, c_reasult.number_of_waypoints as usize).to_vec()
+                slice::from_raw_parts(c_reasult.waypoints, c_reasult.number_of_waypoints as usize)
+                    .to_vec()
             };
 
             for waypoint in &waypoints_vec {
@@ -209,13 +210,11 @@ impl TripResult {
             }
         }
 
-        TripResult{
+        TripResult {
             code,
             message,
             waypoints,
-            trips
+            trips,
         }
-
     }
 }
-

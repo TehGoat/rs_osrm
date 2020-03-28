@@ -1,55 +1,53 @@
-use std::ffi::CString;
-use std::os::raw::{c_short, c_double, c_int, c_char};
 use crate::Boolean;
-use std::ptr::null;
-use std::ffi::CStr;
 use core::slice;
+use std::ffi::CStr;
+use std::ffi::CString;
+use std::os::raw::{c_char, c_double, c_int, c_short};
+use std::ptr::null;
 
 #[repr(C)]
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 pub struct Bearing {
     pub bearing: c_short,
-    pub range: c_short
+    pub range: c_short,
 }
 
 #[repr(C)]
 #[derive(Clone)]
 pub enum Approach {
-    UNRESTRICTED = 0,
-    CURB = 1,
+    UNRESTRICTED,
+    CURB,
 }
 
 #[repr(C)]
 #[derive(Clone)]
-pub(crate) struct COsrmCoordinate{
+pub(crate) struct COsrmCoordinate {
     pub(crate) latitude: c_double,
-    pub(crate) longitude: c_double
+    pub(crate) longitude: c_double,
 }
 
 impl COsrmCoordinate {
     pub(crate) fn to_coordinate(&self) -> Coordinate {
         Coordinate {
             latitude: self.latitude,
-            longitude: self.longitude
+            longitude: self.longitude,
         }
     }
 }
 
-
 #[derive(Clone)]
 pub struct Coordinate {
     pub latitude: f64,
-    pub longitude: f64
+    pub longitude: f64,
 }
 
 impl Coordinate {
     pub(crate) fn to_ccoordinate(&self) -> COsrmCoordinate {
         COsrmCoordinate {
             latitude: self.latitude,
-            longitude: self.longitude
+            longitude: self.longitude,
         }
     }
-
 }
 
 pub(crate) fn to_vec_ccoordinate(coordinates: &Vec<Coordinate>) -> Vec<COsrmCoordinate> {
@@ -61,26 +59,25 @@ pub(crate) fn to_vec_ccoordinate(coordinates: &Vec<Coordinate>) -> Vec<COsrmCoor
     return_vec
 }
 
-
 #[repr(C)]
 #[derive(Clone)]
-pub(crate)  struct COsrmLanes{
+pub(crate) struct COsrmLanes {
     pub(crate) indications: *const *const c_char,
-    pub(crate) valid: Boolean
+    pub(crate) valid: Boolean,
 }
 
 impl COsrmLanes {
-    pub(crate) fn to_lanes(&self) -> Lanes{
-        Lanes{
+    pub(crate) fn to_lanes(&self) -> Lanes {
+        Lanes {
             indications: Vec::new(),
-            valid: false
+            valid: false,
         }
     }
 }
 
-pub struct Lanes{
+pub struct Lanes {
     pub indications: Vec<String>,
-    pub valid: bool
+    pub valid: bool,
 }
 
 #[repr(C)]
@@ -96,19 +93,19 @@ pub(crate) struct COsrmIntersections {
     pub(crate) intersection_in: c_int,
     pub(crate) intersection_out: c_int,
     pub(crate) lanes: *const COsrmLanes,
-    pub(crate) number_of_lanes: c_int
+    pub(crate) number_of_lanes: c_int,
 }
 
 impl COsrmIntersections {
     pub(crate) fn to_intersections(&self) -> Intersections {
-        let mut intersection = Intersections{
+        let mut intersection = Intersections {
             location: self.location.to_coordinate(),
             bearings: Vec::new(),
             classes: Vec::new(),
             entry: Vec::new(),
             intersection_in: self.intersection_in,
             intersection_out: self.intersection_out,
-            lanes: Vec::new()
+            lanes: Vec::new(),
         };
 
         if self.bearings != std::ptr::null_mut() {
@@ -158,7 +155,7 @@ pub struct Intersections {
     pub entry: Vec<bool>,
     pub intersection_in: i32,
     pub intersection_out: i32,
-    pub lanes: Vec<Lanes>
+    pub lanes: Vec<Lanes>,
 }
 
 #[repr(C)]
@@ -173,7 +170,7 @@ pub(crate) struct COsrmManeuver {
 
 impl COsrmManeuver {
     pub(crate) fn to_maneuver(&self) -> Maneuver {
-       Maneuver{
+        Maneuver {
             bearing_before: self.bearing_before,
             bearing_after: self.bearing_after,
             coordinate: self.coordinate.to_coordinate(),
@@ -236,7 +233,8 @@ impl COsrmStep {
 
         if self.intersections != std::ptr::null_mut() {
             let intersections_vec = unsafe {
-                slice::from_raw_parts(self.intersections, self.number_of_intersections as usize).to_vec()
+                slice::from_raw_parts(self.intersections, self.number_of_intersections as usize)
+                    .to_vec()
             };
 
             for intersection in &intersections_vec {
@@ -269,22 +267,28 @@ pub struct Step {
 #[derive(Clone)]
 pub(crate) struct COsrmMetaData {
     pub(crate) datasource_names: *const *const c_char,
-    pub(crate) number_of_datasource_names: c_int
+    pub(crate) number_of_datasource_names: c_int,
 }
 
 impl COsrmMetaData {
     pub(crate) fn to_meta_data(&self) -> MetaData {
         let mut meta_data = MetaData {
-            datasource_names: Vec::new()
+            datasource_names: Vec::new(),
         };
 
         if self.datasource_names != std::ptr::null_mut() {
             let datasources_vec = unsafe {
-                slice::from_raw_parts(self.datasource_names, self.number_of_datasource_names as usize).to_vec()
+                slice::from_raw_parts(
+                    self.datasource_names,
+                    self.number_of_datasource_names as usize,
+                )
+                .to_vec()
             };
 
             for datasource in datasources_vec {
-                meta_data.datasource_names.push(c_string_to_string(datasource));
+                meta_data
+                    .datasource_names
+                    .push(c_string_to_string(datasource));
             }
         }
 
@@ -293,7 +297,7 @@ impl COsrmMetaData {
 }
 
 pub struct MetaData {
-    datasource_names: Vec<String>
+    datasource_names: Vec<String>,
 }
 
 #[repr(C)]
@@ -311,14 +315,14 @@ pub(crate) struct COsrmAnnotation {
 
 impl COsrmAnnotation {
     pub(crate) fn to_annotation(&self) -> Annotation {
-        let mut annotation = Annotation{
+        let mut annotation = Annotation {
             duration: Vec::new(),
             distance: Vec::new(),
             speed: Vec::new(),
             weight: Vec::new(),
             nodes: Vec::new(),
             datasources: Vec::new(),
-            metadata: None
+            metadata: None,
         };
 
         if self.duration != std::ptr::null_mut() {
@@ -353,7 +357,8 @@ impl COsrmAnnotation {
 
         if self.datasources != std::ptr::null_mut() {
             annotation.datasources = unsafe {
-                slice::from_raw_parts(self.datasources, self.number_of_coordinates as usize).to_vec()
+                slice::from_raw_parts(self.datasources, self.number_of_coordinates as usize)
+                    .to_vec()
             };
         }
 
@@ -383,8 +388,8 @@ pub(crate) struct COsrmRouteLeg {
     pub(crate) summary: *const c_char,
     pub(crate) weight: c_double,
     pub(crate) distance: c_double,
-    pub(crate) steps: *const  COsrmStep,
-    pub(crate) number_of_steps: c_int
+    pub(crate) steps: *const COsrmStep,
+    pub(crate) number_of_steps: c_int,
 }
 
 impl COsrmRouteLeg {
@@ -395,7 +400,7 @@ impl COsrmRouteLeg {
             summary: c_string_to_option_string(self.summary),
             weight: self.weight,
             distance: self.distance,
-            steps: Vec::new()
+            steps: Vec::new(),
         };
 
         if self.annotation != std::ptr::null_mut() {
@@ -412,7 +417,6 @@ impl COsrmRouteLeg {
             }
         }
 
-
         route_leg
     }
 }
@@ -423,7 +427,7 @@ pub struct RouteLeg {
     pub summary: Option<String>,
     pub weight: f64,
     pub distance: f64,
-    pub steps: Vec<Step>
+    pub steps: Vec<Step>,
 }
 
 #[repr(C)]
@@ -435,24 +439,23 @@ pub(crate) struct COsrmRoute {
     pub(crate) weight: c_double,
     pub(crate) geometry: *const c_char,
     pub(crate) legs: *const COsrmRouteLeg,
-    pub(crate) number_of_legs: c_int
+    pub(crate) number_of_legs: c_int,
 }
 
 impl COsrmRoute {
     pub(crate) fn to_route(&self) -> Route {
-        let mut route = Route{
+        let mut route = Route {
             duration: self.duration,
             distance: self.distance,
             weight_name: c_string_to_option_string(self.weight_name),
             weight: self.weight,
             geometry: c_string_to_option_string(self.geometry),
-            legs: Vec::new()
+            legs: Vec::new(),
         };
 
         if self.legs != std::ptr::null_mut() {
-            let legs_vec = unsafe {
-                slice::from_raw_parts(self.legs, self.number_of_legs as usize).to_vec()
-            };
+            let legs_vec =
+                unsafe { slice::from_raw_parts(self.legs, self.number_of_legs as usize).to_vec() };
 
             for leg in legs_vec {
                 route.legs.push(leg.to_route_leg());
@@ -469,7 +472,7 @@ pub struct Route {
     pub weight_name: Option<String>,
     pub weight: f64,
     pub geometry: Option<String>,
-    pub legs: Vec<RouteLeg>
+    pub legs: Vec<RouteLeg>,
 }
 
 #[repr(C)]
@@ -477,14 +480,14 @@ pub struct Route {
 pub(crate) struct CGeneralOptions {
     pub(crate) coordinate: *const COsrmCoordinate,
     pub(crate) number_of_coordinates: c_int,
-    pub(crate) bearings: *const Bearing,
-    pub(crate) radiuses: *const c_double,
+    pub(crate) bearings: *const *const Bearing,
+    pub(crate) radiuses: *const *const c_double,
     pub(crate) generate_hints: Boolean,
     pub(crate) skip_waypoints: Boolean,
     pub(crate) hints: *const *const c_char,
-    pub(crate) approach: *const Approach,
+    pub(crate) approach: *const *const Approach,
     pub(crate) exclude: *const *const c_char,
-    pub(crate) number_of_excludes: c_int
+    pub(crate) number_of_excludes: c_int,
 }
 
 impl CGeneralOptions {
@@ -500,37 +503,76 @@ impl CGeneralOptions {
             hints: std::ptr::null(),
             approach: std::ptr::null(),
             exclude: std::ptr::null(),
-            number_of_excludes: 0
+            number_of_excludes: 0,
         };
 
         if option.bearings.is_some() {
-            general_c_option.bearings = option.bearings.as_ref().unwrap().as_ptr();
+            option.bearings_t.clear();
+
+            for bearing in option.bearings.as_ref().unwrap() {
+                match bearing {
+                    Some(it) => {
+                        option.bearings_t.push(it);
+                    }
+                    None => {
+                        option.bearings_t.push(std::ptr::null());
+                    }
+                }
+            }
+            general_c_option.bearings = option.bearings_t.as_ptr();
         }
 
         if option.radiuses.is_some() {
-            general_c_option.radiuses = option.radiuses.as_ref().unwrap().as_ptr();
+            option.radiuses_t.clear();
+
+            for radiuse in option.radiuses.as_ref().unwrap() {
+                match radiuse {
+                    Some(it) => {
+                        option.radiuses_t.push(it);
+                    }
+                    None => {
+                        option.radiuses_t.push(std::ptr::null());
+                    }
+                }
+            }
+            general_c_option.radiuses = option.radiuses_t.as_ptr();
         }
 
         if option.hints.is_some() {
             let mut c_hint_vec = Vec::new();
             for hint in option.hints.as_ref().unwrap() {
-                c_hint_vec.push(CString::new(hint.clone()).unwrap());   
+                c_hint_vec.push(CString::new(hint.clone()).unwrap());
             }
             option.c_hints = Option::from(c_hint_vec);
-            general_c_option.hints = option.c_hints.as_ref().unwrap().as_ptr() as *const *const  c_char;
+            general_c_option.hints =
+                option.c_hints.as_ref().unwrap().as_ptr() as *const *const c_char;
         }
 
         if option.approach.is_some() {
-            general_c_option.approach = option.approach.as_ref().unwrap().as_ptr();
+            option.approach_t.clear();
+
+            for approach in option.approach.as_ref().unwrap() {
+                match approach {
+                    Some(it) => {
+                        option.approach_t.push(it);
+                    }
+                    None => {
+                        option.approach_t.push(std::ptr::null());
+                    }
+                }
+            }
+
+            general_c_option.approach = option.approach_t.as_ptr();
         }
 
         if option.exclude.is_some() {
             let mut c_exclude_vec = Vec::new();
             for exclude in option.exclude.as_ref().unwrap() {
-                c_exclude_vec.push(CString::new(exclude.clone()).unwrap());   
+                c_exclude_vec.push(CString::new(exclude.clone()).unwrap());
             }
             option.c_exclude = Option::from(c_exclude_vec);
-            general_c_option.exclude = option.c_exclude.as_ref().unwrap().as_ptr() as *const *const c_char;
+            general_c_option.exclude =
+                option.c_exclude.as_ref().unwrap().as_ptr() as *const *const c_char;
             general_c_option.number_of_excludes = option.exclude.as_ref().unwrap().len() as c_int;
         }
 
@@ -539,16 +581,19 @@ impl CGeneralOptions {
 }
 
 #[derive(Clone)]
-pub struct GeneralOptions{
+pub struct GeneralOptions {
     pub coordinate: Vec<Coordinate>,
     pub(crate) c_coordinate: Vec<COsrmCoordinate>,
-    pub bearings: Option<Vec<Bearing>>,
-    pub radiuses: Option<Vec<f64>>,
+    pub bearings: Option<Vec<Option<Bearing>>>,
+    pub(crate) bearings_t: Vec<*const Bearing>,
+    pub radiuses: Option<Vec<Option<f64>>>,
+    pub(crate) radiuses_t: Vec<*const f64>,
     pub generate_hints: bool,
     pub skip_waypoints: bool,
     pub hints: Option<Vec<String>>,
     pub(crate) c_hints: Option<Vec<CString>>,
-    pub approach: Option<Vec<Approach>>,
+    pub approach: Option<Vec<Option<Approach>>>,
+    pub(crate) approach_t: Vec<*const Approach>,
     pub exclude: Option<Vec<String>>,
     pub(crate) c_exclude: Option<Vec<CString>>,
 }
@@ -559,12 +604,15 @@ impl GeneralOptions {
             coordinate: coordinates.clone(),
             c_coordinate: to_vec_ccoordinate(&coordinates),
             bearings: None,
+            bearings_t: vec![],
             radiuses: None,
+            radiuses_t: vec![],
             generate_hints: true,
             skip_waypoints: false,
             hints: None,
             c_hints: None,
             approach: None,
+            approach_t: vec![],
             exclude: None,
             c_exclude: None,
         }
@@ -577,19 +625,18 @@ pub(crate) struct CWaypoint {
     pub(crate) hint: *const c_char,
     pub(crate) distance: c_double,
     pub(crate) name: *const c_char,
-    pub(crate) location: [c_double; 2]
+    pub(crate) location: [c_double; 2],
 }
 
 pub struct Waypoint {
     pub hint: Option<String>,
     pub distance: f64,
     pub name: String,
-    pub location: [f64; 2]
+    pub location: [f64; 2],
 }
 
 impl Waypoint {
     pub(crate) fn new(c_waypoints: &CWaypoint) -> Waypoint {
-
         let mut hint: Option<String> = None;
         if c_waypoints.hint != null() {
             hint = Option::from(c_string_to_string(c_waypoints.hint));
@@ -599,7 +646,7 @@ impl Waypoint {
             hint,
             distance: c_waypoints.distance,
             name: c_string_to_string(c_waypoints.name),
-            location: c_waypoints.location
+            location: c_waypoints.location,
         }
     }
 }
