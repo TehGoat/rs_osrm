@@ -7,6 +7,8 @@
 
 ## Rust wrapper for osrm
 
+### Requeries that osrm's dependencies is installed
+
 ### How to use:
 1. Create an EngineConfig, pass path to .osrm file. You may change other settings, see osrm documentation.
 2. Create an Osrm via Osrm::new and pass in the config.

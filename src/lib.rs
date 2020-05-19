@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use core::fmt::Display;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 use std::{
     fmt,
     os::raw::{c_char, c_double, c_int, c_void},
@@ -17,8 +17,16 @@ pub mod trip;
 
 #[link(name = "c_osrm")]
 extern "C" {
-    fn osrm_create(config: *const CEngineConfig) -> *mut c_void;
+    fn osrm_create(config: *const CEngineConfig, return_value: *mut *mut COSRM);
+    fn osrm_destroy_error_message(error_message: *const c_char);
     fn osrm_destroy(osrm: *mut c_void);
+}
+
+#[repr(C)]
+#[derive(Clone)]
+pub(crate) struct COSRM {
+    pub(crate) obj: *mut c_void,
+    pub(crate) error_message: *const c_char
 }
 
 #[repr(C)]
@@ -208,12 +216,27 @@ pub struct Osrm {
 }
 
 impl Osrm {
-    pub fn new(config: &mut EngineConfig) -> Osrm {
+    pub fn new(config: &mut EngineConfig) -> Result<Osrm, String> {
         let c_engine_config = config.to_cengine_config();
         unsafe {
-            Osrm {
-                config: Box::new(osrm_create(&c_engine_config as *const CEngineConfig)),
+            let mut result: *mut COSRM = std::ptr::null_mut();
+            let result_ptr: *mut *mut COSRM = &mut result;
+            osrm_create(&c_engine_config as *const CEngineConfig, result_ptr);
+
+            if (*result).error_message != std::ptr::null_mut() {
+                
+                let c_name_buf: *const c_char = (*result).error_message;
+                let c_name_str: &CStr =  CStr::from_ptr(c_name_buf);
+                let name_str_slice = c_name_str.to_str().unwrap().to_string();
+
+                osrm_destroy_error_message((*result).error_message);
+
+                return Err(name_str_slice);
             }
+
+            Ok(Osrm {
+                config: Box::new((*result).obj),
+            })
         }
     }
 }
@@ -227,3 +250,4 @@ impl Drop for Osrm {
 }
 
 unsafe impl Send for Osrm {}
+
