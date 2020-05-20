@@ -170,3 +170,29 @@ impl NearestRequest {
         }
     }
 }
+
+#[allow(unused_imports)]
+mod tests {
+
+    use crate::{Algorithm, EngineConfig, Osrm, Status};
+    use super::{NearestResult, NearestRequest};
+
+    #[test]
+    fn nearest_test() {
+        let mut config = EngineConfig::new("/home/tehkoza/osrm/sweden-latest.osrm");
+        config.use_shared_memory = false;
+        config.algorithm = Algorithm::MLD;
+        
+        let osrm = Osrm::new(&mut config);
+        assert_eq!(osrm.is_ok(), true);
+
+        let unwraped_osrm = osrm.unwrap();
+
+        let mut request = NearestRequest::new(59.37178, 17.87865);
+
+        let result: (Status, NearestResult) = request.run(&unwraped_osrm);
+
+        assert_eq!(result.0, Status::Ok);
+
+    }
+}
