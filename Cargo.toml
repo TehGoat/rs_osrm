@@ -1,18 +1,18 @@
 [package]
-name = "rs_osrm"
-version = "1.0.7"
+name = "rsc_osrm"
+version = "0.1.0"
 license = "MIT"
-authors = ["Ronny Karlsson <mafiapro@live.se>"]
+authors = ["Chang Zhao <zhchang@gmail.com>"]
 edition = "2018"
-description = "rust wrapper for osrm"
-repository = "https://github.com/TehGoat/rs_osrm"
+description = "rust wrapper for osrm, folk from TehGoat/rs_osrm"
+repository = "https://github.com/zhchang/rs_osrm"
 keywords = ["osrm"]
 readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "rs_osrm"
+name = "rsc_osrm"
 path = "src/lib.rs"
 
 [dependencies]
