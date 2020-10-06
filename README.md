@@ -1,4 +1,4 @@
-# rs_osrm
+# rsc_osrm
 [![Crates.io][crates-badge]][crates-url]
 
 [crates-badge]: https://img.shields.io/crates/v/rs_osrm.svg
@@ -17,39 +17,23 @@
 
 ### Nearest example:
 ```rust
-use rs_osrm::{EngineConfig, Osrm, Algorithm, Status, nearest::NearestRequest};
+use rsc_osrm::{EngineConfig, Osrm, Algorithm, Status, route::RouteRequest, general::Coordinate};
 
 fn main() {
-    let mut config = EngineConfig::new("<PATH TO .osrm file>");
+    let mut config = EngineConfig::new("<path to your .osrm file>");
     config.use_shared_memory = false;
     config.algorithm = Algorithm::MLD;
-    let osrm = Osrm::new(&mut config);
-    
-    let mut request = NearestRequest::new(57.804404, 13.448601);
-    request.number_of_results =  3;
-
-    let result = request.run(&osrm);
-
-    if result.0 == Status::Ok {
-        if result.1.code.is_some() {
-            println!("code: {}", result.1.code.unwrap());
+    let osrm = Osrm::new(&mut config).unwrap();
+    let coords = vec!(Coordinate{latitude:12.98657118,longitude:77.56644753}, Coordinate{latitude:12.97436012,longitude:77.62567071});
+    let mut request = RouteRequest::new(&coords);
+    let (status,result) = request.run(&osrm);
+    match status{
+        Status::Ok => {
+            let route0 = &result.routes[0];
+            println!("eta: {}, eda: {}, geometry: {}",route0.duration, route0.distance, (route0.geometry).as_ref().unwrap());
         }
-
-        if result.1.waypoints.is_some() {
-            for waypoint in result.1.waypoints.unwrap() {
-                println!("lat: {}, lon: {}, name: {}", waypoint.location[1], waypoint.location[0], waypoint.name);
-            }
-        }
-    } else {
-        if result.1.code.is_some() {
-            println!("code: {}", result.1.code.unwrap());
-        }
-        if result.1.message.is_some() {
-            println!("message: {}", result.1.message.unwrap());
-        }
+        _ => println!("call osrm failed"),
     }
-
 }
-
 
 ```
