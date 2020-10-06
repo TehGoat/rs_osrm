@@ -1,3 +1,3 @@
 [submodule "c_osrm"]
 	path = c_osrm
-	url = https://github.com/zhchang/c_osrm.git
+	url = git@github.com:zhchang/c_osrm.git
