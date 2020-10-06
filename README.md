@@ -2,7 +2,7 @@
 [![Crates.io][crates-badge]][crates-url]
 
 [crates-badge]: https://img.shields.io/crates/v/rs_osrm.svg
-[crates-url]: https://crates.io/crates/rs_osrm
+[crates-url]: https://crates.io/crates/rsc_osrm
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## Rust wrapper for osrm
