@@ -8,6 +8,12 @@
 ## Rust wrapper for osrm
 
 ### Requeries that osrm's dependencies is installed
+to link final binary, you need:
+0. libosrm.a
+1. libboost_filesystem.so
+2. libboost_iostreams.so
+3. libboost_thread.so
+4. libboost_system.so
 
 ### How to use:
 1. Create an EngineConfig, pass path to .osrm file. You may change other settings, see osrm documentation.
