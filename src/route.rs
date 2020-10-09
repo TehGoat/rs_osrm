@@ -21,7 +21,7 @@ extern "C" {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum GeometriesType {
     Polyline,
     Polyline6,
@@ -29,7 +29,7 @@ pub enum GeometriesType {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum OverviewType {
     Simplified,
     Full,
@@ -37,7 +37,7 @@ pub enum OverviewType {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum AnnotationsType {
     None,
     Duration,
@@ -50,7 +50,7 @@ pub enum AnnotationsType {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 enum ContinueStraight {
     ContinueStraightNone,
     ContinueStraightTrue,
@@ -202,6 +202,27 @@ impl RouteRequest {
             waypoints: None,
         }
     }
+    pub fn steps(&mut self, val: bool) ->&mut RouteRequest {
+        self.steps = val;
+        self
+    }
+    pub fn alternatives(&mut self, val: bool) ->&mut RouteRequest {
+        self.alternatives = val;
+        self
+    }
+    pub fn altcount(&mut self, val: u32) ->&mut RouteRequest {
+        self.number_of_alternatives = val;
+        self
+    }
+    pub fn geometries(&mut self, val: GeometriesType) ->&mut RouteRequest {
+        self.geometries = val;
+        self
+    }
+    pub fn overview(&mut self, val: OverviewType) ->&mut RouteRequest {
+        self.overview = val;
+        self
+    }
+
 
     pub fn run(&mut self, osrm: &Osrm) -> (Status, RouteResult) {
         unsafe {
@@ -222,3 +243,25 @@ impl RouteRequest {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_route_request(){
+        let coords = vec![Coordinate{latitude:1.,longitude:2.},Coordinate{latitude:3.,longitude:4.}];
+        let mut req = RouteRequest::new(&coords);
+        req.steps(true);
+        assert_eq!(req.steps, true);
+        req.alternatives(true);
+        assert_eq!(req.alternatives, true);
+        req.altcount(2);
+        assert_eq!(req.number_of_alternatives, 2);
+        req.geometries(GeometriesType::Polyline);
+        assert_eq!(req.geometries, GeometriesType::Polyline);
+        req.overview(OverviewType::Full);
+        assert_eq!(req.overview, OverviewType::Full);
+
+
+    }
+} 
