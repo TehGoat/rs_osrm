@@ -106,15 +106,15 @@ impl CTripRequest {
 }
 
 pub struct TripRequest {
-    general_options: GeneralOptions,
-    roundtrip: bool,
-    source: trip_start,
-    destination: trip_end,
-    steps: bool,
-    annotations: bool,
-    annotations_type: AnnotationsType,
-    geometries: GeometriesType,
-    overview: OverviewType,
+    pub general_options: GeneralOptions,
+    pub roundtrip: bool,
+    pub source: trip_start,
+    pub destination: trip_end,
+    pub steps: bool,
+    pub annotations: bool,
+    pub  annotations_type: AnnotationsType,
+    pub geometries: GeometriesType,
+    pub overview: OverviewType,
 }
 
 impl TripRequest {

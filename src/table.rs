@@ -178,13 +178,13 @@ impl TableResult {
 }
 
 pub struct TableRequest {
-    general_options: GeneralOptions,
-    sources: Option<Vec<i32>>,
-    destinations: Option<Vec<i32>>,
-    annotations: Annotations,
-    fallback_speed: f64,
-    fallback_coordinate: FallbackCoordinate,
-    scale_factor: f64,
+    pub general_options: GeneralOptions,
+    pub sources: Option<Vec<i32>>,
+    pub destinations: Option<Vec<i32>>,
+    pub annotations: Annotations,
+    pub fallback_speed: f64,
+    pub fallback_coordinate: FallbackCoordinate,
+    pub scale_factor: f64,
 }
 
 impl TableRequest {

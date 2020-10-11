@@ -10,6 +10,7 @@ use std::ffi::{c_void, CStr};
 use std::os::raw::{c_char, c_double, c_int, c_longlong};
 use std::ptr::null;
 
+
 #[link(name = "c_osrm")]
 extern "C" {
     fn nearest_result_destroy(result: *mut CNearestResult);

@@ -175,16 +175,16 @@ impl RouteResult {
 }
 
 pub struct RouteRequest {
-    general_options: GeneralOptions,
-    steps: bool,
-    alternatives: bool,
-    number_of_alternatives: u32,
-    annotations: bool,
-    annotations_type: AnnotationsType,
-    geometries: GeometriesType,
-    overview: OverviewType,
-    continue_straight: Option<bool>,
-    waypoints: Option<Vec<u64>>,
+    pub general_options: GeneralOptions,
+    pub steps: bool,
+    pub alternatives: bool,
+    pub number_of_alternatives: u32,
+    pub annotations: bool,
+    pub annotations_type: AnnotationsType,
+    pub geometries: GeometriesType,
+    pub overview: OverviewType,
+    pub continue_straight: Option<bool>,
+    pub waypoints: Option<Vec<u64>>,
 }
 
 impl RouteRequest {

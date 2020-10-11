@@ -198,16 +198,16 @@ impl CMatchRequest {
 }
 
 pub struct MatchRequest {
-    general_options: GeneralOptions,
-    steps: bool,
-    geometries: GeometriesType,
-    annotations: bool,
-    annotations_type: AnnotationsType,
-    overview: OverviewType,
-    timestamps: Option<Vec<i32>>,
-    gaps: Gap,
-    tidy: bool,
-    waypoints: Option<Vec<i32>>,
+    pub general_options: GeneralOptions,
+    pub steps: bool,
+    pub geometries: GeometriesType,
+    pub annotations: bool,
+    pub annotations_type: AnnotationsType,
+    pub overview: OverviewType,
+    pub timestamps: Option<Vec<i32>>,
+    pub gaps: Gap,
+    pub tidy: bool,
+    pub waypoints: Option<Vec<i32>>,
 }
 
 impl MatchRequest {
