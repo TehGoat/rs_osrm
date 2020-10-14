@@ -116,6 +116,7 @@ struct CRouteResult {
     number_of_routes: c_int,
 }
 
+#[derive(Debug)]
 pub struct RouteResult {
     pub code: Option<String>,
     pub message: Option<String>,

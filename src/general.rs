@@ -35,7 +35,7 @@ impl COsrmCoordinate {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Coordinate {
     pub latitude: f64,
     pub longitude: f64,
@@ -75,6 +75,7 @@ impl COsrmLanes {
     }
 }
 
+#[derive(Debug)]
 pub struct Lanes {
     pub indications: Vec<String>,
     pub valid: bool,
@@ -148,6 +149,7 @@ impl COsrmIntersections {
     }
 }
 
+#[derive(Debug)]
 pub struct Intersections {
     pub location: Coordinate,
     pub bearings: Vec<i32>,
@@ -180,6 +182,7 @@ impl COsrmManeuver {
     }
 }
 
+#[derive(Debug)]
 pub struct Maneuver {
     pub bearing_before: i32,
     pub bearing_after: i32,
@@ -246,6 +249,7 @@ impl COsrmStep {
     }
 }
 
+#[derive(Debug)]
 pub struct Step {
     pub distance: f64,
     pub duration: f64,
@@ -296,6 +300,7 @@ impl COsrmMetaData {
     }
 }
 
+#[derive(Debug)]
 pub struct MetaData {
     datasource_names: Vec<String>,
 }
@@ -370,6 +375,7 @@ impl COsrmAnnotation {
     }
 }
 
+#[derive(Debug)]
 pub struct Annotation {
     pub duration: Vec<f64>,
     pub distance: Vec<f64>,
@@ -421,6 +427,7 @@ impl COsrmRouteLeg {
     }
 }
 
+#[derive(Debug)]
 pub struct RouteLeg {
     pub annotation: Option<Annotation>,
     pub duration: f64,
@@ -466,6 +473,7 @@ impl COsrmRoute {
     }
 }
 
+#[derive(Debug)]
 pub struct Route {
     pub duration: f64,
     pub distance: f64,
@@ -628,6 +636,7 @@ pub(crate) struct CWaypoint {
     pub(crate) location: [c_double; 2],
 }
 
+#[derive(Debug)]
 pub struct Waypoint {
     pub hint: Option<String>,
     pub distance: f64,
