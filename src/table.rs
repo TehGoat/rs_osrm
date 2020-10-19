@@ -81,16 +81,19 @@ struct CTableResult {
     code: *const c_char,
     message: *const c_char,
     durations: *const f64,
+    distances: *const f64,
     sources: *const CWaypoint,
     destinations: *const CWaypoint,
     number_of_sources: c_int,
     number_of_destinations: c_int,
 }
 
+#[derive(Debug)]
 pub struct TableResult {
     pub code: Option<String>,
     pub message: Option<String>,
     pub durations: Option<Vec<Vec<f64>>>,
+    pub distances: Option<Vec<Vec<f64>>>,
     pub sources: Option<Vec<Waypoint>>,
     pub destinations: Option<Vec<Waypoint>>,
 }
@@ -134,6 +137,27 @@ impl TableResult {
             durations = Option::from(rs_vec);
         }
 
+        let mut distances: Option<Vec<Vec<f64>>> = None;
+        if c_reasult.distances != std::ptr::null_mut() {
+            let distances_vec = unsafe {
+                slice::from_raw_parts(
+                    c_reasult.distances,
+                    (c_reasult.number_of_sources * c_reasult.number_of_destinations) as usize,
+                )
+            };
+
+            let mut rs_vec = Vec::new();
+            for i in 0..c_reasult.number_of_sources {
+                let mut rs_tmp_vec = Vec::new();
+                for j in 0..c_reasult.number_of_destinations {
+                    rs_tmp_vec.push(distances_vec[(i * c_reasult.number_of_sources + j) as usize]);
+                }
+                rs_vec.push(rs_tmp_vec);
+            }
+
+            distances = Option::from(rs_vec);
+        }
+
         let mut sources: Option<Vec<Waypoint>> = None;
         if c_reasult.sources != std::ptr::null_mut() {
             let sources_vec = unsafe {
@@ -171,6 +195,7 @@ impl TableResult {
             code,
             message,
             durations,
+            distances,
             sources,
             destinations,
         }
@@ -198,6 +223,21 @@ impl TableRequest {
             fallback_coordinate: FallbackCoordinate::INPUT,
             scale_factor: 1.0,
         }
+    }
+
+    pub fn annotations(&mut self, annotations: Annotations) ->&mut TableRequest{
+        self.annotations = annotations;
+        self
+    }
+
+    pub fn sources(&mut self, sources: Vec<i32>) ->&mut TableRequest{
+        self.sources = Some(sources);
+        self
+    }
+
+    pub fn destinations(&mut self, destinations: Vec<i32>) ->&mut TableRequest{
+        self.destinations = Some(destinations);
+        self
     }
 
     pub fn run(&mut self, osrm: &Osrm) -> (Status, TableResult) {
