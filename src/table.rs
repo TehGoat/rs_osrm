@@ -129,7 +129,8 @@ impl TableResult {
             for i in 0..c_reasult.number_of_sources {
                 let mut rs_tmp_vec = Vec::new();
                 for j in 0..c_reasult.number_of_destinations {
-                    rs_tmp_vec.push(durations_vec[(i * c_reasult.number_of_sources + j) as usize]);
+                    rs_tmp_vec
+                        .push(durations_vec[(i * c_reasult.number_of_destinations + j) as usize]);
                 }
                 rs_vec.push(rs_tmp_vec);
             }
@@ -150,7 +151,8 @@ impl TableResult {
             for i in 0..c_reasult.number_of_sources {
                 let mut rs_tmp_vec = Vec::new();
                 for j in 0..c_reasult.number_of_destinations {
-                    rs_tmp_vec.push(distances_vec[(i * c_reasult.number_of_sources + j) as usize]);
+                    rs_tmp_vec
+                        .push(distances_vec[(i * c_reasult.number_of_destinations + j) as usize]);
                 }
                 rs_vec.push(rs_tmp_vec);
             }
@@ -225,17 +227,17 @@ impl TableRequest {
         }
     }
 
-    pub fn annotations(&mut self, annotations: Annotations) ->&mut TableRequest{
+    pub fn annotations(&mut self, annotations: Annotations) -> &mut TableRequest {
         self.annotations = annotations;
         self
     }
 
-    pub fn sources(&mut self, sources: Vec<i32>) ->&mut TableRequest{
+    pub fn sources(&mut self, sources: Vec<i32>) -> &mut TableRequest {
         self.sources = Some(sources);
         self
     }
 
-    pub fn destinations(&mut self, destinations: Vec<i32>) ->&mut TableRequest{
+    pub fn destinations(&mut self, destinations: Vec<i32>) -> &mut TableRequest {
         self.destinations = Some(destinations);
         self
     }

@@ -26,7 +26,7 @@ extern "C" {
 #[derive(Clone)]
 pub(crate) struct COSRM {
     pub(crate) obj: *mut c_void,
-    pub(crate) error_message: *mut c_char
+    pub(crate) error_message: *mut c_char,
 }
 
 #[repr(C)]
@@ -224,9 +224,8 @@ impl Osrm {
             osrm_create(&c_engine_config as *const CEngineConfig, result_ptr);
 
             if (*result).error_message != std::ptr::null_mut() {
-                
                 let c_name_buf: *const c_char = (*result).error_message;
-                let c_name_str: &CStr =  CStr::from_ptr(c_name_buf);
+                let c_name_str: &CStr = CStr::from_ptr(c_name_buf);
 
                 match c_name_str.to_str() {
                     Ok(ok) => {
@@ -235,15 +234,11 @@ impl Osrm {
                         osrm_destroy_error_message((*result).error_message);
 
                         return Err(name_str_slice);
-
-                    },
+                    }
                     Err(e) => {
                         return Err(e.to_string());
                     }
                 }
-                
-
-                
             }
 
             Ok(Osrm {
@@ -262,4 +257,3 @@ impl Drop for Osrm {
 }
 
 unsafe impl Send for Osrm {}
-
