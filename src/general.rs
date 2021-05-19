@@ -327,37 +327,37 @@ impl COsrmAnnotation {
 
         if self.duration != std::ptr::null_mut() {
             annotation.duration = unsafe {
-                slice::from_raw_parts(self.duration, self.number_of_coordinates as usize).to_vec()
+                slice::from_raw_parts(self.duration, (self.number_of_coordinates + 1) as usize).to_vec()
             };
         }
 
         if self.distance != std::ptr::null_mut() {
             annotation.distance = unsafe {
-                slice::from_raw_parts(self.distance, self.number_of_coordinates as usize).to_vec()
+                slice::from_raw_parts(self.distance, (self.number_of_coordinates + 1) as usize).to_vec()
             };
         }
 
         if self.speed != std::ptr::null_mut() {
             annotation.speed = unsafe {
-                slice::from_raw_parts(self.speed, self.number_of_coordinates as usize).to_vec()
+                slice::from_raw_parts(self.speed, (self.number_of_coordinates + 1) as usize).to_vec()
             };
         }
 
         if self.weight != std::ptr::null_mut() {
             annotation.weight = unsafe {
-                slice::from_raw_parts(self.weight, self.number_of_coordinates as usize).to_vec()
+                slice::from_raw_parts(self.weight, (self.number_of_coordinates + 1) as usize).to_vec()
             };
         }
 
         if self.nodes != std::ptr::null_mut() {
             annotation.nodes = unsafe {
-                slice::from_raw_parts(self.nodes, self.number_of_coordinates as usize).to_vec()
+                slice::from_raw_parts(self.nodes, (self.number_of_coordinates + 1) as usize).to_vec()
             };
         }
 
         if self.datasources != std::ptr::null_mut() {
             annotation.datasources = unsafe {
-                slice::from_raw_parts(self.datasources, self.number_of_coordinates as usize)
+                slice::from_raw_parts(self.datasources, (self.number_of_coordinates + 1) as usize)
                     .to_vec()
             };
         }

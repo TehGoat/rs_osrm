@@ -14,7 +14,7 @@ use crate::Status;
 use core::ffi::c_void;
 use std::os::raw::c_char;
 use std::os::raw::c_double;
-use std::{ffi::CStr, os::raw::c_int, slice};
+use std::{ffi::CStr, os::raw::c_int, os::raw::c_float, slice};
 
 #[link(name = "c_osrm")]
 extern "C" {
@@ -73,7 +73,7 @@ pub(crate) struct CMatchRoute {
     pub(crate) geometry: *const c_char,
     pub(crate) legs: *const COsrmRouteLeg,
     pub(crate) number_of_legs: c_int,
-    pub(crate) confidence: c_double,
+    pub(crate) confidence: c_float,
 }
 
 pub struct MatchRoute {
@@ -84,7 +84,7 @@ pub struct MatchRoute {
     pub geometry: Option<String>,
     pub legs: Vec<RouteLeg>,
     pub number_of_legs: i32,
-    pub confidence: f64,
+    pub confidence: f32,
 }
 
 impl MatchRoute {
@@ -118,7 +118,7 @@ impl MatchRoute {
             weight: c_route.weight,
             geometry,
             legs: legs,
-            number_of_legs: 0,
+            number_of_legs: if c_route.number_of_legs < 0 { 0 } else { c_route.number_of_legs as i32 },
             confidence: c_route.confidence,
         }
     }
