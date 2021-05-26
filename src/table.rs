@@ -1,6 +1,6 @@
 use crate::general::Coordinate;
-use crate::general::Waypoint;
-use crate::general::{CGeneralOptions, CWaypoint, GeneralOptions};
+use crate::general::waypoint::{Waypoint, CWaypoint};
+use crate::general::general_options::{CGeneralOptions, GeneralOptions};
 use crate::{Osrm, Status};
 use core::slice;
 use std::ffi::CStr;
@@ -49,7 +49,7 @@ struct CTableRequest {
 impl CTableRequest {
     fn new(request: &mut TableRequest) -> CTableRequest {
         let mut c_request = CTableRequest {
-            general_options: CGeneralOptions::new(&mut request.general_options),
+            general_options: (&mut request.general_options).into(),
             sources: std::ptr::null(),
             number_of_sources: 0,
             destinations: std::ptr::null(),
@@ -157,38 +157,37 @@ impl TableResult {
             distances = Option::from(rs_vec);
         }
 
-        let mut sources: Option<Vec<Waypoint>> = None;
-        if c_reasult.sources != std::ptr::null_mut() {
-            let sources_vec = unsafe {
-                slice::from_raw_parts(c_reasult.sources, c_reasult.number_of_sources as usize)
-                    .to_vec()
-            };
+        let sources: Option<Vec<Waypoint>> = if c_reasult.sources != std::ptr::null_mut() {
+            Some(
+                unsafe {
+                    slice::from_raw_parts(c_reasult.sources, c_reasult.number_of_sources as usize)
+                        .to_vec()
+                }
+                .iter()
+                .map(|source| source.into())
+                .collect(),
+            )
+        } else {
+            None
+        };
 
-            let mut rs_vec = Vec::new();
-            for source in &sources_vec {
-                rs_vec.push(Waypoint::new(source));
-            }
-
-            sources = Option::from(rs_vec);
-        }
-
-        let mut destinations: Option<Vec<Waypoint>> = None;
-        if c_reasult.destinations != std::ptr::null_mut() {
-            let destinations_vec = unsafe {
-                slice::from_raw_parts(
-                    c_reasult.destinations,
-                    c_reasult.number_of_destinations as usize,
+        let destinations: Option<Vec<Waypoint>> =
+            if c_reasult.destinations != std::ptr::null_mut() {
+                Some(
+                    unsafe {
+                        slice::from_raw_parts(
+                            c_reasult.destinations,
+                            c_reasult.number_of_destinations as usize,
+                        )
+                        .to_vec()
+                    }
+                    .iter()
+                    .map(|destination| destination.into())
+                    .collect(),
                 )
-                .to_vec()
+            } else {
+                None
             };
-
-            let mut rs_vec = Vec::new();
-            for destination in &destinations_vec {
-                rs_vec.push(Waypoint::new(destination));
-            }
-
-            destinations = Option::from(rs_vec);
-        }
 
         TableResult {
             code,

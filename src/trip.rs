@@ -2,7 +2,7 @@ use crate::general::c_string_to_string;
 use crate::general::COsrmRoute;
 use crate::general::Coordinate;
 use crate::general::Route;
-use crate::general::{CGeneralOptions, GeneralOptions};
+use crate::general::general_options::{CGeneralOptions, GeneralOptions};
 use crate::route::AnnotationsType;
 use crate::route::GeometriesType;
 use crate::route::OverviewType;
@@ -92,7 +92,7 @@ struct CTripRequest {
 impl CTripRequest {
     fn new(request: &mut TripRequest) -> CTripRequest {
         CTripRequest {
-            general_options: CGeneralOptions::new(&mut request.general_options),
+            general_options: (&mut request.general_options).into(),
             roundtrip: Boolean::from(request.roundtrip),
             source: request.source.clone(),
             destination: request.destination.clone(),

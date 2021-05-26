@@ -1,9 +1,8 @@
 use crate::general::c_string_to_option_string;
 use crate::general::c_string_to_string;
-use crate::general::CGeneralOptions;
 use crate::general::COsrmRouteLeg;
 use crate::general::Coordinate;
-use crate::general::GeneralOptions;
+use crate::general::general_options::{GeneralOptions, CGeneralOptions};
 use crate::general::RouteLeg;
 use crate::route::AnnotationsType;
 use crate::route::GeometriesType;
@@ -165,7 +164,7 @@ struct CMatchRequest {
 impl CMatchRequest {
     fn new(request: &mut MatchRequest) -> CMatchRequest {
         let mut c_request = CMatchRequest {
-            general_options: CGeneralOptions::new(&mut request.general_options),
+            general_options: (&mut request.general_options).into(),
             steps: Boolean::from(request.steps),
             geometries: request.geometries.clone(),
             annotations: Boolean::from(request.annotations),

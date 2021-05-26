@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 
-use crate::general::CGeneralOptions;
 use crate::general::Coordinate;
-use crate::general::GeneralOptions;
+use crate::general::general_options::{GeneralOptions, CGeneralOptions};
 use crate::{Osrm, Status};
 use core::slice;
 use std::borrow::ToOwned;
@@ -32,6 +31,7 @@ pub struct CNearestWaypoint {
     location: [c_double; 2],
 }
 
+#[derive(Debug)]
 pub struct NearestWaypoint {
     pub nodes: [i64; 2],
     pub hint: Option<String>,
@@ -72,6 +72,7 @@ pub struct CNearestResult {
     number_of_waypoints: c_int,
 }
 
+#[derive(Debug)]
 pub struct NearestResult {
     pub code: Option<String>,
     pub message: Option<String>,
@@ -130,7 +131,7 @@ struct CNearestRequest {
 impl CNearestRequest {
     fn new(request: &mut NearestRequest) -> CNearestRequest {
         CNearestRequest {
-            general_options: CGeneralOptions::new(&mut request.general_options),
+            general_options: (&mut request.general_options).into(),
             number_of_results: request.number_of_results as c_int,
         }
     }

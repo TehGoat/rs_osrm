@@ -1,8 +1,8 @@
 use crate::general::COsrmRoute;
 use crate::general::Coordinate;
 use crate::general::Route;
-use crate::general::Waypoint;
-use crate::general::{CGeneralOptions, CWaypoint, GeneralOptions};
+use crate::general::waypoint::{Waypoint, CWaypoint};
+use crate::general::general_options::{CGeneralOptions, GeneralOptions};
 use crate::Osrm;
 use crate::{Boolean, Status};
 use core::slice;
@@ -75,7 +75,7 @@ struct CRouteRequest {
 impl CRouteRequest {
     fn new(request: &mut RouteRequest) -> CRouteRequest {
         let mut c_request = CRouteRequest {
-            general_options: CGeneralOptions::new(&mut request.general_options),
+            general_options: (&mut request.general_options).into(),
             steps: Boolean::from(request.steps),
             alternatives: Boolean::from(request.alternatives),
             number_of_alternatives: request.number_of_alternatives,
@@ -141,17 +141,18 @@ impl RouteResult {
             message = Option::from(message_str_slice.to_owned());
         }
 
-        let mut waypoints: Vec<Waypoint> = Vec::new();
+        let waypoints: Vec<Waypoint> = 
         if c_reasult.waypoints != std::ptr::null_mut() {
-            let waypoints_vec = unsafe {
+            unsafe {
                 slice::from_raw_parts(c_reasult.waypoints, c_reasult.number_of_waypoints as usize)
                     .to_vec()
-            };
-
-            for waypoint in &waypoints_vec {
-                waypoints.push(Waypoint::new(waypoint));
             }
-        }
+            .iter()
+            .map(|waypoint| waypoint.into())
+            .collect()
+        } else {
+            Vec::new()
+        };
 
         let mut routes: Vec<Route> = Vec::new();
         if c_reasult.routes != std::ptr::null_mut() {
