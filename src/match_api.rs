@@ -1,9 +1,10 @@
 use crate::general::c_string_to_option_string;
 use crate::general::c_string_to_string;
-use crate::general::COsrmRouteLeg;
 use crate::general::Coordinate;
-use crate::general::general_options::{GeneralOptions, CGeneralOptions};
-use crate::general::RouteLeg;
+use crate::general::c_structs::c_route_leg::COsrmRouteLeg;
+use crate::general::rs_structs::general_options::GeneralOptions;
+use crate::general::c_structs::c_general_options::CGeneralOptions;
+use crate::general::rs_structs::route_leg::RouteLeg;
 use crate::route::AnnotationsType;
 use crate::route::GeometriesType;
 use crate::route::OverviewType;
@@ -105,8 +106,8 @@ impl MatchRoute {
                 slice::from_raw_parts(c_route.legs, c_route.number_of_legs as usize).to_vec()
             };
 
-            for leg in legs_vec {
-                legs.push(leg.to_route_leg());
+            for leg in legs_vec.iter() {
+                legs.push(leg.into());
             }
         }
 

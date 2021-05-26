@@ -4,8 +4,8 @@ use crate::{Algorithm, Boolean, Osrm};
 
 use super::c_engine_config::CEngineConfig;
 
-pub struct EngineConfigBuilder<'a> {
-    storage_config: &'a str,
+pub struct EngineConfigBuilder {
+    storage_config: CString,
     max_locations_trip: i32,
     max_locations_viaroute: i32,
     max_locations_distance_table: i32,
@@ -14,17 +14,17 @@ pub struct EngineConfigBuilder<'a> {
     max_results_nearest: i32,
     max_alternatives: i32,
     use_shared_memory: bool,
-    memory_file: Option<&'a str>,
+    memory_file: Option<CString>,
     use_mmap: bool,
     algorithm: Algorithm,
-    verbosity: Option<&'a str>,
-    dataset_name: Option<&'a str>,
+    verbosity: Option<CString>,
+    dataset_name: Option<CString>,
 }
 
-impl<'a> EngineConfigBuilder<'a> {
+impl EngineConfigBuilder {
     pub fn new(storage_config: &str) -> EngineConfigBuilder {
         EngineConfigBuilder {
-            storage_config: storage_config,
+            storage_config: CString::new(storage_config).unwrap(),
             max_locations_trip: -1,
             max_locations_viaroute: -1,
             max_locations_distance_table: -1,
@@ -42,115 +42,118 @@ impl<'a> EngineConfigBuilder<'a> {
     }
 
     pub fn set_storate_config<'i>(
-        &'a mut self,
-        storage_config: &'a str,
-    ) -> &'i mut EngineConfigBuilder<'a> {
-        self.storage_config = storage_config;
+        &'i mut self,
+        storage_config: &str,
+    ) -> &'i mut Self {
+        self.storage_config = CString::new(storage_config).unwrap();
         self
     }
 
     pub fn set_max_locations_trip<'i>(
-        &'a mut self,
+        &'i mut self,
         max_locations_trip: i32,
-    ) -> &'i mut EngineConfigBuilder<'a> {
+    ) -> &'i mut Self {
         self.max_locations_trip = max_locations_trip;
         self
     }
 
     pub fn set_max_locations_viaroute<'i>(
-        &'a mut self,
+        &'i mut self,
         max_locations_viaroute: i32,
-    ) -> &'i mut EngineConfigBuilder<'a> {
+    ) -> &'i mut Self {
         self.max_locations_viaroute = max_locations_viaroute;
         self
     }
 
     pub fn set_max_locations_distance_table<'i>(
-        &'a mut self,
+        &'i mut self,
         max_locations_distance_table: i32,
-    ) -> &'i mut EngineConfigBuilder<'a> {
+    ) -> &'i mut Self {
         self.max_locations_distance_table = max_locations_distance_table;
         self
     }
 
     pub fn set_max_locations_map_matching<'i>(
-        &'a mut self,
+        &'i mut self,
         max_locations_map_matching: i32,
-    ) -> &'i mut EngineConfigBuilder<'a> {
+    ) -> &'i mut Self {
         self.max_locations_map_matching = max_locations_map_matching;
         self
     }
 
     pub fn set_max_radius_map_matching<'i>(
-        &'a mut self,
+        &'i mut self,
         max_radius_map_matching: f64,
-    ) -> &'i mut EngineConfigBuilder<'a> {
+    ) -> &'i mut Self {
         self.max_radius_map_matching = max_radius_map_matching;
         self
     }
 
     pub fn set_max_results_nearest<'i>(
-        &'a mut self,
+        &'i mut self,
         max_results_nearest: i32,
-    ) -> &'i mut EngineConfigBuilder<'a> {
+    ) -> &'i mut Self {
         self.max_results_nearest = max_results_nearest;
         self
     }
 
     pub fn set_max_alternatives<'i>(
-        &'a mut self,
+        &'i mut self,
         max_alternatives: i32,
-    ) -> &'i mut EngineConfigBuilder<'a> {
+    ) -> &'i mut Self {
         self.max_alternatives = max_alternatives;
         self
     }
 
     pub fn set_use_shared_memory<'i>(
-        &'a mut self,
+        &'i mut self,
         use_shared_memory: bool,
-    ) -> &'i mut EngineConfigBuilder<'a> {
+    ) -> &'i mut Self {
         self.use_shared_memory = use_shared_memory;
         self
     }
 
     pub fn set_memory_file<'i>(
-        &'a mut self,
-        memory_file: Option<&'a str>,
-    ) -> &'i mut EngineConfigBuilder<'a> {
-        self.memory_file = memory_file;
+        &'i mut self,
+        memory_file: Option<String>,
+    ) -> &'i mut Self {
+        self.memory_file = match memory_file {
+            Some(value) => CString::new(value).unwrap().into(),
+            None => None,
+        };
         self
     }
 
-    pub fn set_use_mmap<'i>(&'a mut self, use_mmap: bool) -> &'i mut EngineConfigBuilder<'a> {
+    pub fn set_use_mmap<'i>(&'i mut self, use_mmap: bool) -> &'i mut Self {
         self.use_mmap = use_mmap;
         self
     }
 
-    pub fn set_algorithm<'i>(
-        &'a mut self,
-        algorithm: Algorithm,
-    ) -> &'i mut EngineConfigBuilder<'a> {
+    pub fn set_algorithm<'i>(&'i mut self, algorithm: Algorithm) -> &'i mut Self {
         self.algorithm = algorithm;
         self
     }
 
-    pub fn set_verbosity<'i>(
-        &'a mut self,
-        verbosity: Option<&'a str>,
-    ) -> &'i mut EngineConfigBuilder<'a> {
-        self.verbosity = verbosity;
+    pub fn set_verbosity<'i>(&'i mut self, verbosity: Option<&str>) -> &'i mut Self {
+        self.verbosity = match verbosity {
+            Some(value) => CString::new(value).unwrap().into(),
+            None => None,
+        };
         self
     }
 
     pub fn set_dataset_name<'i>(
-        &'a mut self,
-        dataset_name: Option<&'a str>,
-    ) -> &'i mut EngineConfigBuilder<'a> {
-        self.dataset_name = dataset_name;
+        &'i mut self,
+        dataset_name: Option<String>,
+    ) -> &'i mut Self {
+        self.dataset_name = match dataset_name {
+            Some(value) => CString::new(value).unwrap().into(),
+            None => None,
+        };
         self
     }
 
-    pub fn build(&self) -> Result<Osrm, String> {
+    pub fn build(&mut self) -> Result<Osrm, String> {
         let c_storage_config = CString::new(self.storage_config.clone()).unwrap();
         let mut c_engine_config = CEngineConfig::new(&c_storage_config);
 
@@ -169,12 +172,9 @@ impl<'a> EngineConfigBuilder<'a> {
 
         match &self.memory_file {
             Some(memory_file_string) => {
-                let c_memory_file = CString::new(memory_file_string.clone()).unwrap();
-
-                c_engine_config.memory_file = c_memory_file.as_ptr();
+                c_engine_config.memory_file = memory_file_string.as_ptr();
             }
-            None => {
-            }
+            None => {}
         }
 
         if self.use_mmap {
@@ -187,9 +187,8 @@ impl<'a> EngineConfigBuilder<'a> {
 
         match &self.verbosity {
             Some(verbosity_string) => {
-                let c_verbosity = CString::new(verbosity_string.clone()).unwrap();
 
-                c_engine_config.verbosity = c_verbosity.as_ptr();
+                c_engine_config.verbosity = verbosity_string.as_ptr();
             }
             None => {}
         }

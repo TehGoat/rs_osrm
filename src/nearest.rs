@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 
 use crate::general::Coordinate;
-use crate::general::general_options::{GeneralOptions, CGeneralOptions};
+use crate::general::rs_structs::general_options::GeneralOptions;
+use crate::general::c_structs::c_general_options::CGeneralOptions;
 use crate::{Osrm, Status};
 use core::slice;
 use std::borrow::ToOwned;

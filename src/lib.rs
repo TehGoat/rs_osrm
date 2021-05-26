@@ -121,26 +121,32 @@ unsafe impl Send for Osrm {}
 
 #[cfg(test)]
 mod tests {
-    use crate::{Osrm, engine_config::engine_config_builder::EngineConfigBuilder, nearest::NearestRequest};
+    use crate::{
+        engine_config::engine_config_builder::EngineConfigBuilder, nearest::NearestRequest, Osrm,
+    };
 
     #[test]
     fn it_works() {
-        let osrm = EngineConfigBuilder::new("/home/ronny/osrm/sweden-latest.osrm")
-            .set_algorithm(crate::Algorithm::MLD)
-            .set_use_shared_memory(false)
-            .build();
+        let osrm = qqq();
 
+        println!("{:?}", osrm.as_ref().err());
         assert_eq!(osrm.is_ok(), true);
 
         asd(osrm.ok().unwrap());
     }
 
-
     fn asd(osrm: Osrm) {
         let mut asd = NearestRequest::new(53.342, 14.234234);
         let asd = asd.run(&osrm);
 
-        print!("{}\n{:?}", asd.0, asd.1);
-        
+        println!("{}\n{:?}", asd.0, asd.1);
+    }
+
+    fn qqq() -> Result<Osrm, String> {
+        EngineConfigBuilder::new("/home/tehkoza/project/osrm/sweden-latest.osrm")
+            .set_algorithm(crate::Algorithm::MLD)
+            .set_use_shared_memory(false)
+            .set_verbosity(Some("asd123"))
+            .build()
     }
 }

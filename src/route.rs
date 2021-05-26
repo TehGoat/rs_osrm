@@ -1,8 +1,10 @@
-use crate::general::COsrmRoute;
 use crate::general::Coordinate;
-use crate::general::Route;
-use crate::general::waypoint::{Waypoint, CWaypoint};
-use crate::general::general_options::{CGeneralOptions, GeneralOptions};
+use crate::general::c_structs::c_route::COsrmRoute;
+use crate::general::rs_structs::route::Route;
+use crate::general::rs_structs::waypoint::Waypoint;
+use crate::general::c_structs::c_waypoint::CWaypoint;
+use crate::general::rs_structs::general_options::GeneralOptions;
+use crate::general::c_structs::c_general_options::CGeneralOptions;
 use crate::Osrm;
 use crate::{Boolean, Status};
 use core::slice;

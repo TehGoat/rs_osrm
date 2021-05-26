@@ -1,15 +1,6 @@
-use std::{os::raw::{c_char, c_double}, ptr::null};
+use std::{ptr::null};
 
-use super::c_string_to_string;
-
-#[repr(C)]
-#[derive(Clone)]
-pub(crate) struct CWaypoint {
-    pub(crate) hint: *const c_char,
-    pub(crate) distance: c_double,
-    pub(crate) name: *const c_char,
-    pub(crate) location: [c_double; 2],
-}
+use crate::general::{c_string_to_string, c_structs::c_waypoint::CWaypoint};
 
 pub struct Waypoint {
     pub hint: Option<String>,

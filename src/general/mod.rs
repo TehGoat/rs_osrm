@@ -3,8 +3,8 @@ use core::slice;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_double, c_int, c_short};
 
-pub mod waypoint;
-pub mod general_options;
+pub mod c_structs;
+pub mod rs_structs;
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -66,19 +66,19 @@ pub(crate) struct COsrmLanes {
     pub(crate) indications: *const *const c_char,
     pub(crate) valid: Boolean,
 }
-
-impl COsrmLanes {
-    pub(crate) fn to_lanes(&self) -> Lanes {
-        Lanes {
-            indications: Vec::new(),
-            valid: false,
-        }
-    }
-}
-
 pub struct Lanes {
     pub indications: Vec<String>,
     pub valid: bool,
+}
+
+//TODO
+impl From<&COsrmLanes> for Lanes {
+    fn from(c_lanes: &COsrmLanes) -> Self {
+        Lanes {
+            indications: Vec::new(),
+            valid: c_lanes.valid == Boolean::TRUE,
+        }
+    }
 }
 
 #[repr(C)]
@@ -141,7 +141,7 @@ impl COsrmIntersections {
             };
 
             for lane in &lanes_vec {
-                intersection.lanes.push(lane.to_lanes());
+                intersection.lanes.push(lane.into());
             }
         }
 
@@ -157,6 +157,66 @@ pub struct Intersections {
     pub intersection_in: i32,
     pub intersection_out: i32,
     pub lanes: Vec<Lanes>,
+}
+
+impl From<&COsrmIntersections> for Intersections {
+    fn from(c_intersection: &COsrmIntersections) -> Self {
+        Intersections {
+            location: c_intersection.location.to_coordinate(),
+            intersection_in: c_intersection.intersection_in,
+            intersection_out: c_intersection.intersection_out,
+            bearings: if c_intersection.bearings != std::ptr::null_mut() {
+                unsafe {
+                    slice::from_raw_parts(
+                        c_intersection.bearings,
+                        c_intersection.number_of_bearings as usize,
+                    )
+                    .to_vec()
+                }
+            } else {
+                Vec::new()
+            },
+            classes: if c_intersection.classes != std::ptr::null_mut() {
+                unsafe {
+                    slice::from_raw_parts(
+                        c_intersection.classes,
+                        c_intersection.number_of_classes as usize,
+                    )
+                }
+                .iter()
+                .map(|class| c_string_to_string(*class))
+                .collect()
+            } else {
+                Vec::new()
+            },
+            entry: if c_intersection.entry != std::ptr::null_mut() {
+                unsafe {
+                    slice::from_raw_parts(
+                        c_intersection.entry,
+                        c_intersection.number_of_entries as usize,
+                    )
+                }
+                .iter()
+                .map(|entry| *entry == Boolean::TRUE)
+                .collect()
+            } else {
+                Vec::new()
+            },
+            lanes: if c_intersection.lanes != std::ptr::null_mut() {
+                unsafe {
+                    slice::from_raw_parts(
+                        c_intersection.lanes,
+                        c_intersection.number_of_lanes as usize,
+                    )
+                }
+                .iter()
+                .map(|lane| lane.into())
+                .collect()
+            } else {
+                Vec::new()
+            },
+        }
+    }
 }
 
 #[repr(C)]
@@ -209,44 +269,6 @@ pub(crate) struct COsrmStep {
     pub(crate) driving_side: *const c_char,
 }
 
-impl COsrmStep {
-    pub(crate) fn to_step(&self) -> Step {
-        let mut step = Step {
-            distance: self.distance,
-            duration: self.duration,
-            geometry: c_string_to_option_string(self.geometry),
-            weight: self.weight,
-            name: c_string_to_option_string(self.name),
-            reference: c_string_to_option_string(self.reference),
-            pronunciation: c_string_to_option_string(self.pronunciation),
-            exits: c_string_to_option_string(self.exits),
-            mode: c_string_to_option_string(self.exits),
-            metadata: None,
-            intersections: Vec::new(),
-            rotary_name: c_string_to_option_string(self.exits),
-            rotary_pronunciation: c_string_to_option_string(self.exits),
-            driving_side: c_string_to_option_string(self.exits),
-        };
-
-        if self.metadata != std::ptr::null_mut() {
-            step.metadata = unsafe { Option::from((*self.metadata).to_maneuver()) };
-        }
-
-        if self.intersections != std::ptr::null_mut() {
-            let intersections_vec = unsafe {
-                slice::from_raw_parts(self.intersections, self.number_of_intersections as usize)
-                    .to_vec()
-            };
-
-            for intersection in &intersections_vec {
-                step.intersections.push(intersection.to_intersections());
-            }
-        }
-
-        step
-    }
-}
-
 pub struct Step {
     pub distance: f64,
     pub duration: f64,
@@ -262,6 +284,43 @@ pub struct Step {
     pub rotary_name: Option<String>,
     pub rotary_pronunciation: Option<String>,
     pub driving_side: Option<String>,
+}
+
+impl From<&COsrmStep> for Step {
+    fn from(c_step: &COsrmStep) -> Self {
+        Step {
+            distance: c_step.distance,
+            duration: c_step.duration,
+            geometry: c_string_to_option_string(c_step.geometry),
+            weight: c_step.weight,
+            name: c_string_to_option_string(c_step.name),
+            reference: c_string_to_option_string(c_step.reference),
+            pronunciation: c_string_to_option_string(c_step.pronunciation),
+            exits: c_string_to_option_string(c_step.exits),
+            mode: c_string_to_option_string(c_step.exits),
+            rotary_name: c_string_to_option_string(c_step.exits),
+            rotary_pronunciation: c_string_to_option_string(c_step.exits),
+            driving_side: c_string_to_option_string(c_step.exits),
+            metadata: if c_step.metadata != std::ptr::null_mut() {
+                unsafe { Option::from((*c_step.metadata).to_maneuver()) }.into()
+            } else {
+                None
+            },
+            intersections: if c_step.intersections != std::ptr::null_mut() {
+                unsafe {
+                    slice::from_raw_parts(
+                        c_step.intersections,
+                        c_step.number_of_intersections as usize,
+                    )
+                    .iter()
+                    .map(|intersection| intersection.to_intersections())
+                    .collect()
+                }
+            } else {
+                Vec::new()
+            },
+        }
+    }
 }
 
 #[repr(C)]
@@ -384,101 +443,6 @@ pub struct Annotation {
     pub nodes: Vec<i64>,
     pub datasources: Vec<i32>,
     pub metadata: Option<MetaData>,
-}
-
-#[repr(C)]
-#[derive(Clone)]
-pub(crate) struct COsrmRouteLeg {
-    pub(crate) annotation: *const COsrmAnnotation,
-    pub(crate) duration: c_double,
-    pub(crate) summary: *const c_char,
-    pub(crate) weight: c_double,
-    pub(crate) distance: c_double,
-    pub(crate) steps: *const COsrmStep,
-    pub(crate) number_of_steps: c_int,
-}
-
-impl COsrmRouteLeg {
-    pub(crate) fn to_route_leg(&self) -> RouteLeg {
-        let mut route_leg = RouteLeg {
-            annotation: None,
-            duration: self.duration,
-            summary: c_string_to_option_string(self.summary),
-            weight: self.weight,
-            distance: self.distance,
-            steps: Vec::new(),
-        };
-
-        if self.annotation != std::ptr::null_mut() {
-            route_leg.annotation = Option::from(unsafe { (*self.annotation).to_annotation() });
-        }
-
-        if self.steps != std::ptr::null_mut() {
-            let steps_vec = unsafe {
-                slice::from_raw_parts(self.steps, self.number_of_steps as usize).to_vec()
-            };
-
-            for step in steps_vec {
-                route_leg.steps.push(step.to_step());
-            }
-        }
-
-        route_leg
-    }
-}
-
-pub struct RouteLeg {
-    pub annotation: Option<Annotation>,
-    pub duration: f64,
-    pub summary: Option<String>,
-    pub weight: f64,
-    pub distance: f64,
-    pub steps: Vec<Step>,
-}
-
-#[repr(C)]
-#[derive(Clone)]
-pub(crate) struct COsrmRoute {
-    pub(crate) duration: c_double,
-    pub(crate) distance: c_double,
-    pub(crate) weight_name: *const c_char,
-    pub(crate) weight: c_double,
-    pub(crate) geometry: *const c_char,
-    pub(crate) legs: *const COsrmRouteLeg,
-    pub(crate) number_of_legs: c_int,
-}
-
-impl COsrmRoute {
-    pub(crate) fn to_route(&self) -> Route {
-        let mut route = Route {
-            duration: self.duration,
-            distance: self.distance,
-            weight_name: c_string_to_option_string(self.weight_name),
-            weight: self.weight,
-            geometry: c_string_to_option_string(self.geometry),
-            legs: Vec::new(),
-        };
-
-        if self.legs != std::ptr::null_mut() {
-            let legs_vec =
-                unsafe { slice::from_raw_parts(self.legs, self.number_of_legs as usize).to_vec() };
-
-            for leg in legs_vec {
-                route.legs.push(leg.to_route_leg());
-            }
-        }
-
-        route
-    }
-}
-
-pub struct Route {
-    pub duration: f64,
-    pub distance: f64,
-    pub weight_name: Option<String>,
-    pub weight: f64,
-    pub geometry: Option<String>,
-    pub legs: Vec<RouteLeg>,
 }
 
 pub(crate) fn c_string_to_string(c_string: *const c_char) -> String {

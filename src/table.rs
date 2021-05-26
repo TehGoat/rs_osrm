@@ -1,6 +1,8 @@
 use crate::general::Coordinate;
-use crate::general::waypoint::{Waypoint, CWaypoint};
-use crate::general::general_options::{CGeneralOptions, GeneralOptions};
+use crate::general::rs_structs::waypoint::Waypoint;
+use crate::general::c_structs::c_waypoint::CWaypoint;
+use crate::general::rs_structs::general_options::GeneralOptions;
+use crate::general::c_structs::c_general_options::CGeneralOptions;
 use crate::{Osrm, Status};
 use core::slice;
 use std::ffi::CStr;
