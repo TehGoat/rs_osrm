@@ -2,6 +2,7 @@ use std::slice;
 
 use crate::general::{Annotation, Step, c_string_to_option_string, c_structs::c_route_leg::COsrmRouteLeg};
 
+#[derive(Debug)]
 pub struct RouteLeg {
     pub annotation: Option<Annotation>,
     pub duration: f64,

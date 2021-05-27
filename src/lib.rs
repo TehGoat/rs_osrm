@@ -122,7 +122,11 @@ unsafe impl Send for Osrm {}
 #[cfg(test)]
 mod tests {
     use crate::{
-        engine_config::engine_config_builder::EngineConfigBuilder, nearest::NearestRequest, Osrm,
+        engine_config::engine_config_builder::EngineConfigBuilder,
+        general::Coordinate,
+        match_api::MatchRequest,
+        route::{OverviewType},
+        Osrm,
     };
 
     #[test]
@@ -136,14 +140,21 @@ mod tests {
     }
 
     fn asd(osrm: Osrm) {
-        let mut asd = NearestRequest::new(53.342, 14.234234);
+        let mut asd = MatchRequest::new(&vec![
+            Coordinate::new(57.784715, 13.406278),
+            Coordinate::new(57.801590, 13.381306),
+        ]);
+        asd.steps = true;
+        asd.annotations = false;
+        asd.overview = OverviewType::Full;
         let asd = asd.run(&osrm);
 
         println!("{}\n{:?}", asd.0, asd.1);
     }
 
     fn qqq() -> Result<Osrm, String> {
-        EngineConfigBuilder::new("/home/tehkoza/project/osrm/sweden-latest.osrm")
+        EngineConfigBuilder::new("/home/ronny/osrm/sweden-latest.osrm")
+            .set_max_locations_map_matching(5)
             .set_algorithm(crate::Algorithm::MLD)
             .set_use_shared_memory(false)
             .set_verbosity(Some("asd123"))

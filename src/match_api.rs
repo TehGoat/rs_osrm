@@ -39,6 +39,7 @@ pub(crate) struct CMatchWaypoint {
     alternatives_count: c_int,
 }
 
+#[derive(Debug)]
 pub struct MatchWaypoint {
     pub hint: Option<String>,
     pub distance: f64,
@@ -76,6 +77,7 @@ pub(crate) struct CMatchRoute {
     pub(crate) confidence: c_float,
 }
 
+#[derive(Debug)]
 pub struct MatchRoute {
     pub duration: f64,
     pub distance: f64,
@@ -256,6 +258,7 @@ struct CMatchResult {
     number_of_routes: c_int,
 }
 
+#[derive(Debug)]
 pub struct MatchResult {
     pub code: Option<String>,
     pub message: Option<String>,

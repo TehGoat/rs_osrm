@@ -36,13 +36,20 @@ impl COsrmCoordinate {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Coordinate {
     pub latitude: f64,
     pub longitude: f64,
 }
 
 impl Coordinate {
+    pub fn new(latitude: f64, longitude: f64) -> Coordinate {
+        Coordinate {
+            latitude,
+            longitude
+        }
+    }
+
     pub(crate) fn to_ccoordinate(&self) -> COsrmCoordinate {
         COsrmCoordinate {
             latitude: self.latitude,
@@ -64,18 +71,24 @@ pub(crate) fn to_vec_ccoordinate(coordinates: &Vec<Coordinate>) -> Vec<COsrmCoor
 #[derive(Clone)]
 pub(crate) struct COsrmLanes {
     pub(crate) indications: *const *const c_char,
+    pub(crate) number_of_indications: c_int,
     pub(crate) valid: Boolean,
 }
+#[derive(Debug)]
 pub struct Lanes {
     pub indications: Vec<String>,
     pub valid: bool,
 }
 
-//TODO
 impl From<&COsrmLanes> for Lanes {
     fn from(c_lanes: &COsrmLanes) -> Self {
         Lanes {
-            indications: Vec::new(),
+            indications: unsafe {
+                slice::from_raw_parts(c_lanes.indications, c_lanes.number_of_indications as usize)
+            }
+            .iter()
+            .map(|indication| c_string_to_string(*indication))
+            .collect(),
             valid: c_lanes.valid == Boolean::TRUE,
         }
     }
@@ -149,6 +162,7 @@ impl COsrmIntersections {
     }
 }
 
+#[derive(Debug)]
 pub struct Intersections {
     pub location: Coordinate,
     pub bearings: Vec<i32>,
@@ -241,6 +255,7 @@ impl COsrmManeuver {
     }
 }
 
+#[derive(Debug)]
 pub struct Maneuver {
     pub bearing_before: i32,
     pub bearing_after: i32,
@@ -269,6 +284,7 @@ pub(crate) struct COsrmStep {
     pub(crate) driving_side: *const c_char,
 }
 
+#[derive(Debug)]
 pub struct Step {
     pub distance: f64,
     pub duration: f64,
@@ -356,6 +372,7 @@ impl COsrmMetaData {
     }
 }
 
+#[derive(Debug)]
 pub struct MetaData {
     datasource_names: Vec<String>,
 }
@@ -435,6 +452,7 @@ impl COsrmAnnotation {
     }
 }
 
+#[derive(Debug)]
 pub struct Annotation {
     pub duration: Vec<f64>,
     pub distance: Vec<f64>,
