@@ -13,7 +13,7 @@ use crate::general::to_vec_ccoordinate;
 
 use super::nearest_result::CNearestResult;
 use super::nearest_result::NearestResult;
-use super::nearest_result::{nearest_result_destroy, osrm_nearest};
+use super::{nearest_result_destroy, osrm_nearest};
 
 #[repr(C)]
 pub(crate) struct CNearestRequest {
@@ -21,8 +21,8 @@ pub(crate) struct CNearestRequest {
     number_of_results: c_int,
 }
 
-impl CNearestRequest {
-    fn new(request: &mut NearestRequest) -> CNearestRequest {
+impl From<&mut NearestRequest> for CNearestRequest {
+    fn from(request: &mut NearestRequest) -> Self {
         CNearestRequest {
             general_options: (&mut request.general_options).into(),
             number_of_results: request.number_of_results as c_int,
@@ -67,7 +67,7 @@ impl NearestRequest {
 
             let status = osrm_nearest(
                 *osrm.config,
-                &mut CNearestRequest::new(self) as *mut CNearestRequest,
+                &mut CNearestRequest::from(self) as *mut CNearestRequest,
                 result_ptr,
             );
 

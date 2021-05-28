@@ -1,22 +1,11 @@
-use crate::Status;
 use core::slice;
 use std::borrow::ToOwned;
-use std::ffi::{c_void, CStr};
+use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
 
-use super::nearest_request::CNearestRequest;
 use super::nearest_waypoint::{CNearestWaypoint, NearestWaypoint};
 
-#[link(name = "c_osrm")]
-extern "C" {
-    pub(crate) fn nearest_result_destroy(result: *mut CNearestResult);
 
-    pub(crate) fn osrm_nearest(
-        osrm: *mut c_void,
-        request: *mut CNearestRequest,
-        result: *mut *mut CNearestResult,
-    ) -> Status;
-}
 
 #[repr(C)]
 pub struct CNearestResult {

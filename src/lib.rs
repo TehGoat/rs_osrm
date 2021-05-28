@@ -12,7 +12,7 @@ use engine_config::c_engine_config::CEngineConfig;
 pub mod engine_config;
 pub mod general;
 pub mod match_api;
-pub mod nearest;
+pub mod nearest_api;
 pub mod route;
 pub mod table;
 pub mod tile;
@@ -123,7 +123,7 @@ unsafe impl Send for Osrm {}
 mod tests {
     use crate::{
         engine_config::engine_config_builder::EngineConfigBuilder,
-        nearest::nearest_request::NearestRequest, Osrm,
+        nearest_api::nearest_request::NearestRequest, Osrm,
     };
 
     #[test]
