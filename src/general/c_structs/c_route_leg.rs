@@ -2,11 +2,8 @@ use std::{
     os::raw::{c_char, c_double, c_int},
 };
 
-use crate::general::{
-    COsrmStep,
-};
 
-use super::c_annotation::COsrmAnnotation;
+use super::{c_annotation::COsrmAnnotation, c_step::COsrmStep};
 
 #[repr(C)]
 #[derive(Clone)]

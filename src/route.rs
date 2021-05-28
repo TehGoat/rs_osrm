@@ -1,4 +1,4 @@
-use crate::general::Coordinate;
+use crate::general::rs_structs::coordinate::Coordinate;
 use crate::general::c_structs::c_route::COsrmRoute;
 use crate::general::rs_structs::route::Route;
 use crate::general::rs_structs::waypoint::Waypoint;

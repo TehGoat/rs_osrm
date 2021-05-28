@@ -1,6 +1,6 @@
 use std::os::raw::{c_double, c_int};
 
-use crate::general::COsrmMetaData;
+use super::c_meta_data::COsrmMetaData;
 
 #[repr(C)]
 #[derive(Clone)]

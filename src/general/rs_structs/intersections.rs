@@ -1,6 +1,8 @@
 use std::slice;
 
-use crate::{Boolean, general::{Coordinate, Lanes, c_string_to_string, c_structs::c_intersections::COsrmIntersections}};
+use crate::{Boolean, general::{Coordinate, c_string_to_string, c_structs::c_intersections::COsrmIntersections}};
+
+use super::lanes::Lanes;
 
 
 #[derive(Debug)]
@@ -17,7 +19,7 @@ pub struct Intersections {
 impl From<&COsrmIntersections> for Intersections {
     fn from(c_intersection: &COsrmIntersections) -> Self {
         Intersections {
-            location: c_intersection.location.to_coordinate(),
+            location: (&c_intersection.location).into(),
             intersection_in: c_intersection.intersection_in,
             intersection_out: c_intersection.intersection_out,
             bearings: if c_intersection.bearings != std::ptr::null_mut() {

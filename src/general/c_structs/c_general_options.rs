@@ -3,9 +3,11 @@ use std::{
 };
 
 use crate::{
-    general::{rs_structs::general_options::GeneralOptions, Approach, Bearing, COsrmCoordinate},
+    general::{rs_structs::general_options::GeneralOptions, COsrmCoordinate},
     Boolean,
 };
+
+use super::{c_approach::Approach, c_bearing::Bearing};
 
 #[repr(C)]
 #[derive(Clone)]

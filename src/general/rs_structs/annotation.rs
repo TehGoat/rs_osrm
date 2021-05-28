@@ -1,6 +1,8 @@
 use std::slice;
 
-use crate::general::{MetaData, c_structs::c_annotation::COsrmAnnotation};
+use crate::general::c_structs::c_annotation::COsrmAnnotation;
+
+use super::meta_data::MetaData;
 
 #[derive(Debug)]
 pub struct Annotation {
@@ -83,7 +85,7 @@ impl From<&COsrmAnnotation> for Annotation {
                 Vec::new()
             },
             metadata: if c_annotation.metadata != std::ptr::null_mut() {
-                Option::from(unsafe { (*c_annotation.metadata).to_meta_data() })
+                Option::from(unsafe { let data: MetaData = (&(*c_annotation.metadata)).into(); data })
             } else {
                 None
             },

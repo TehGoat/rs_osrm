@@ -1,8 +1,8 @@
 use std::slice;
 
-use crate::general::{c_string_to_option_string, c_structs::c_route_leg::COsrmRouteLeg, Step};
+use crate::general::{c_string_to_option_string, c_structs::c_route_leg::COsrmRouteLeg};
 
-use super::annotation::Annotation;
+use super::{annotation::Annotation, step::Step};
 
 #[derive(Debug)]
 pub struct RouteLeg {

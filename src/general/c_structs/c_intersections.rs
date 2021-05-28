@@ -1,6 +1,8 @@
 use std::os::raw::{c_char, c_int};
 
-use crate::{Boolean, general::{COsrmCoordinate, COsrmLanes}};
+use crate::{Boolean, general::{COsrmCoordinate}};
+
+use super::c_lanes::COsrmLanes;
 
 #[repr(C)]
 #[derive(Clone)]

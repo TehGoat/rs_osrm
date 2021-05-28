@@ -1,6 +1,6 @@
 use crate::general::c_string_to_option_string;
 use crate::general::c_string_to_string;
-use crate::general::Coordinate;
+use crate::general::rs_structs::coordinate::Coordinate;
 use crate::general::c_structs::c_route_leg::COsrmRouteLeg;
 use crate::general::rs_structs::general_options::GeneralOptions;
 use crate::general::c_structs::c_general_options::CGeneralOptions;

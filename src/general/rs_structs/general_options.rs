@@ -2,7 +2,7 @@ use std::{
     ffi::CString,
 };
 
-use crate::general::{Approach, Bearing, COsrmCoordinate, Coordinate, to_vec_ccoordinate};
+use crate::general::{COsrmCoordinate, Coordinate, c_structs::{c_approach::Approach, c_bearing::Bearing}, to_vec_ccoordinate};
 
 #[derive(Clone)]
 pub struct GeneralOptions {
