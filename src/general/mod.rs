@@ -3,6 +3,9 @@ use core::slice;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_double, c_int, c_short};
 
+use self::c_structs::c_intersections::COsrmIntersections;
+use self::rs_structs::intersections::Intersections;
+
 pub mod c_structs;
 pub mod rs_structs;
 
@@ -46,7 +49,7 @@ impl Coordinate {
     pub fn new(latitude: f64, longitude: f64) -> Coordinate {
         Coordinate {
             latitude,
-            longitude
+            longitude,
         }
     }
 
@@ -90,145 +93,6 @@ impl From<&COsrmLanes> for Lanes {
             .map(|indication| c_string_to_string(*indication))
             .collect(),
             valid: c_lanes.valid == Boolean::TRUE,
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Clone)]
-pub(crate) struct COsrmIntersections {
-    pub(crate) location: COsrmCoordinate,
-    pub(crate) bearings: *const c_int,
-    pub(crate) number_of_bearings: c_int,
-    pub(crate) classes: *const *const c_char,
-    pub(crate) number_of_classes: c_int,
-    pub(crate) entry: *const Boolean,
-    pub(crate) number_of_entries: c_int,
-    pub(crate) intersection_in: c_int,
-    pub(crate) intersection_out: c_int,
-    pub(crate) lanes: *const COsrmLanes,
-    pub(crate) number_of_lanes: c_int,
-}
-
-impl COsrmIntersections {
-    pub(crate) fn to_intersections(&self) -> Intersections {
-        let mut intersection = Intersections {
-            location: self.location.to_coordinate(),
-            bearings: Vec::new(),
-            classes: Vec::new(),
-            entry: Vec::new(),
-            intersection_in: self.intersection_in,
-            intersection_out: self.intersection_out,
-            lanes: Vec::new(),
-        };
-
-        if self.bearings != std::ptr::null_mut() {
-            intersection.bearings = unsafe {
-                slice::from_raw_parts(self.bearings, self.number_of_bearings as usize).to_vec()
-            };
-        }
-
-        if self.classes != std::ptr::null_mut() {
-            let classes_vec: Vec<*const c_char> = unsafe {
-                slice::from_raw_parts(self.classes, self.number_of_classes as usize).to_vec()
-            };
-
-            for class in classes_vec {
-                intersection.classes.push(c_string_to_string(class));
-            }
-        }
-
-        if self.entry != std::ptr::null_mut() {
-            let boolean_vec = unsafe {
-                slice::from_raw_parts(self.entry, self.number_of_entries as usize).to_vec()
-            };
-
-            for class in boolean_vec {
-                intersection.entry.push(class == Boolean::TRUE);
-            }
-        }
-
-        if self.lanes != std::ptr::null_mut() {
-            let lanes_vec = unsafe {
-                slice::from_raw_parts(self.lanes, self.number_of_lanes as usize).to_vec()
-            };
-
-            for lane in &lanes_vec {
-                intersection.lanes.push(lane.into());
-            }
-        }
-
-        intersection
-    }
-}
-
-#[derive(Debug)]
-pub struct Intersections {
-    pub location: Coordinate,
-    pub bearings: Vec<i32>,
-    pub classes: Vec<String>,
-    pub entry: Vec<bool>,
-    pub intersection_in: i32,
-    pub intersection_out: i32,
-    pub lanes: Vec<Lanes>,
-}
-
-impl From<&COsrmIntersections> for Intersections {
-    fn from(c_intersection: &COsrmIntersections) -> Self {
-        Intersections {
-            location: c_intersection.location.to_coordinate(),
-            intersection_in: c_intersection.intersection_in,
-            intersection_out: c_intersection.intersection_out,
-            bearings: if c_intersection.bearings != std::ptr::null_mut() {
-                unsafe {
-                    slice::from_raw_parts(
-                        c_intersection.bearings,
-                        c_intersection.number_of_bearings as usize,
-                    )
-                    .to_vec()
-                }
-            } else {
-                Vec::new()
-            },
-            classes: if c_intersection.classes != std::ptr::null_mut() {
-                unsafe {
-                    slice::from_raw_parts(
-                        c_intersection.classes,
-                        c_intersection.number_of_classes as usize,
-                    )
-                }
-                .iter()
-                .map(|class| c_string_to_string(*class))
-                .collect()
-            } else {
-                Vec::new()
-            },
-            entry: if c_intersection.entry != std::ptr::null_mut() {
-                unsafe {
-                    slice::from_raw_parts(
-                        c_intersection.entry,
-                        c_intersection.number_of_entries as usize,
-                    )
-                }
-                .iter()
-                .map(|entry| *entry == Boolean::TRUE)
-                .collect()
-            } else {
-                Vec::new()
-            },
-            lanes: if c_intersection.lanes != std::ptr::null_mut() {
-                unsafe {
-                    slice::from_raw_parts(
-                        c_intersection.lanes,
-                        c_intersection.number_of_lanes as usize,
-                    )
-                }
-                .iter()
-                .map(|lane| lane.into())
-                .collect()
-            } else {
-                Vec::new()
-            },
         }
     }
 }
@@ -329,7 +193,7 @@ impl From<&COsrmStep> for Step {
                         c_step.number_of_intersections as usize,
                     )
                     .iter()
-                    .map(|intersection| intersection.to_intersections())
+                    .map(|intersection| intersection.into())
                     .collect()
                 }
             } else {
@@ -377,91 +241,8 @@ pub struct MetaData {
     datasource_names: Vec<String>,
 }
 
-#[repr(C)]
-#[derive(Clone)]
-pub(crate) struct COsrmAnnotation {
-    pub(crate) duration: *const c_double,
-    pub(crate) distance: *const c_double,
-    pub(crate) speed: *const c_double,
-    pub(crate) weight: *const c_double,
-    pub(crate) nodes: *const i64,
-    pub(crate) datasources: *const c_int,
-    pub(crate) metadata: *const COsrmMetaData,
-    pub(crate) number_of_coordinates: c_int,
-}
 
-impl COsrmAnnotation {
-    pub(crate) fn to_annotation(&self) -> Annotation {
-        let mut annotation = Annotation {
-            duration: Vec::new(),
-            distance: Vec::new(),
-            speed: Vec::new(),
-            weight: Vec::new(),
-            nodes: Vec::new(),
-            datasources: Vec::new(),
-            metadata: None,
-        };
 
-        if self.duration != std::ptr::null_mut() {
-            annotation.duration = unsafe {
-                slice::from_raw_parts(self.duration, (self.number_of_coordinates + 1) as usize)
-                    .to_vec()
-            };
-        }
-
-        if self.distance != std::ptr::null_mut() {
-            annotation.distance = unsafe {
-                slice::from_raw_parts(self.distance, (self.number_of_coordinates + 1) as usize)
-                    .to_vec()
-            };
-        }
-
-        if self.speed != std::ptr::null_mut() {
-            annotation.speed = unsafe {
-                slice::from_raw_parts(self.speed, (self.number_of_coordinates + 1) as usize)
-                    .to_vec()
-            };
-        }
-
-        if self.weight != std::ptr::null_mut() {
-            annotation.weight = unsafe {
-                slice::from_raw_parts(self.weight, (self.number_of_coordinates + 1) as usize)
-                    .to_vec()
-            };
-        }
-
-        if self.nodes != std::ptr::null_mut() {
-            annotation.nodes = unsafe {
-                slice::from_raw_parts(self.nodes, (self.number_of_coordinates + 1) as usize)
-                    .to_vec()
-            };
-        }
-
-        if self.datasources != std::ptr::null_mut() {
-            annotation.datasources = unsafe {
-                slice::from_raw_parts(self.datasources, (self.number_of_coordinates + 1) as usize)
-                    .to_vec()
-            };
-        }
-
-        if self.metadata != std::ptr::null_mut() {
-            annotation.metadata = Option::from(unsafe { (*self.metadata).to_meta_data() });
-        }
-
-        annotation
-    }
-}
-
-#[derive(Debug)]
-pub struct Annotation {
-    pub duration: Vec<f64>,
-    pub distance: Vec<f64>,
-    pub speed: Vec<f64>,
-    pub weight: Vec<f64>,
-    pub nodes: Vec<i64>,
-    pub datasources: Vec<i32>,
-    pub metadata: Option<MetaData>,
-}
 
 pub(crate) fn c_string_to_string(c_string: *const c_char) -> String {
     if c_string == std::ptr::null_mut() {

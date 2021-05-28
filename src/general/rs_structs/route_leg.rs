@@ -1,6 +1,8 @@
 use std::slice;
 
-use crate::general::{Annotation, Step, c_string_to_option_string, c_structs::c_route_leg::COsrmRouteLeg};
+use crate::general::{c_string_to_option_string, c_structs::c_route_leg::COsrmRouteLeg, Step};
+
+use super::annotation::Annotation;
 
 #[derive(Debug)]
 pub struct RouteLeg {
@@ -20,7 +22,9 @@ impl From<&COsrmRouteLeg> for RouteLeg {
             weight: leg.weight,
             distance: leg.distance,
             annotation: if leg.annotation != std::ptr::null_mut() {
-                unsafe { (*leg.annotation).to_annotation() }.into()
+                let annotation: Annotation = unsafe { (&(*leg.annotation)).into() };
+
+                annotation.into()
             } else {
                 None
             },
@@ -30,7 +34,7 @@ impl From<&COsrmRouteLeg> for RouteLeg {
                     .map(|step| step.into())
                     .collect()
             } else {
-                Vec::new() 
+                Vec::new()
             },
         }
     }

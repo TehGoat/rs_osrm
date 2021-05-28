@@ -3,8 +3,10 @@ use std::{
 };
 
 use crate::general::{
-    COsrmAnnotation, COsrmStep,
+    COsrmStep,
 };
+
+use super::c_annotation::COsrmAnnotation;
 
 #[repr(C)]
 #[derive(Clone)]
