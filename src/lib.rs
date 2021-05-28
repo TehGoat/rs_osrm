@@ -123,10 +123,7 @@ unsafe impl Send for Osrm {}
 mod tests {
     use crate::{
         engine_config::engine_config_builder::EngineConfigBuilder,
-        general::Coordinate,
-        match_api::MatchRequest,
-        route::{OverviewType},
-        Osrm,
+        nearest::nearest_request::NearestRequest, Osrm,
     };
 
     #[test]
@@ -140,14 +137,9 @@ mod tests {
     }
 
     fn asd(osrm: Osrm) {
-        let mut asd = MatchRequest::new(&vec![
-            Coordinate::new(57.784715, 13.406278),
-            Coordinate::new(57.801590, 13.381306),
-        ]);
-        asd.steps = true;
-        asd.annotations = false;
-        asd.overview = OverviewType::Full;
-        let asd = asd.run(&osrm);
+        let asd = NearestRequest::new(57.784715, 13.406278)
+            .set_generate_hints(true)
+            .run(&osrm);
 
         println!("{}\n{:?}", asd.0, asd.1);
     }

@@ -1,8 +1,27 @@
-use std::{
-    ffi::CString,
+use std::ffi::CString;
+
+use crate::general::{
+    c_structs::{c_approach::Approach, c_bearing::Bearing},
+    to_vec_ccoordinate, COsrmCoordinate, Coordinate,
 };
 
-use crate::general::{COsrmCoordinate, Coordinate, c_structs::{c_approach::Approach, c_bearing::Bearing}, to_vec_ccoordinate};
+pub trait GeneralOptionsTrait {
+    fn set_coordinate<'a>(&'a mut self, coordinates: &Vec<Coordinate>) -> &'a mut Self; 
+
+    fn set_bearings<'a>(&'a mut self, bearings: Option<Vec<Option<Bearing>>>) -> &'a mut Self;
+
+    fn set_radiuses<'a>(&'a mut self, radiuses: Option<Vec<Option<f64>>>) -> &'a mut Self;
+
+    fn set_generate_hints<'a>(&'a mut self, generate_hints: bool) -> &'a mut Self;
+
+    fn set_skip_waypoints<'a>(&'a mut self, skip_waypoints: bool) -> &'a mut Self;
+
+    fn set_hints<'a>(&'a mut self, hints: Option<Vec<CString>>) -> &'a mut Self;
+
+    fn set_approach<'a>(&'a mut self, approach: Option<Vec<Option<Approach>>>) -> &'a mut Self;
+
+    fn set_exclude<'a>(&'a mut self, exclude: Option<Vec<CString>>) -> &'a mut Self;
+}
 
 #[derive(Clone)]
 pub struct GeneralOptions {
@@ -35,43 +54,46 @@ impl GeneralOptions {
             exclude: None,
         }
     }
+}
 
-    pub fn set_coordinate<'a>(&'a mut self, coordinates: &Vec<Coordinate>) -> &'a mut Self {
+impl GeneralOptionsTrait for GeneralOptions {
+
+    fn set_coordinate<'a>(&'a mut self, coordinates: &Vec<Coordinate>) -> &'a mut Self {
         self.coordinate = to_vec_ccoordinate(&coordinates);
         self
     }
 
-    pub fn set_bearings<'a>(&'a mut self, bearings: Option<Vec<Option<Bearing>>>) -> &'a mut Self {
+    fn set_bearings<'a>(&'a mut self, bearings: Option<Vec<Option<Bearing>>>) -> &'a mut Self {
         self.bearings = bearings;
         self
     }
 
-    pub fn set_radiuses<'a>(&'a mut self, radiuses: Option<Vec<Option<f64>>>) -> &'a mut Self {
+    fn set_radiuses<'a>(&'a mut self, radiuses: Option<Vec<Option<f64>>>) -> &'a mut Self {
         self.radiuses = radiuses;
         self
     }
 
-    pub fn set_generate_hints<'a>(&'a mut self, generate_hints: bool) -> &'a mut Self {
+    fn set_generate_hints<'a>(&'a mut self, generate_hints: bool) -> &'a mut Self {
         self.generate_hints = generate_hints;
         self
     }
 
-    pub fn set_skip_waypoints<'a>(&'a mut self, skip_waypoints: bool) -> &'a mut Self {
+    fn set_skip_waypoints<'a>(&'a mut self, skip_waypoints: bool) -> &'a mut Self {
         self.skip_waypoints = skip_waypoints;
         self
     }
 
-    pub fn set_hints<'a>(&'a mut self, hints: Option<Vec<CString>>) -> &'a mut Self {
+    fn set_hints<'a>(&'a mut self, hints: Option<Vec<CString>>) -> &'a mut Self {
         self.hints = hints;
         self
     }
 
-    pub fn set_approach<'a>(&'a mut self, approach: Option<Vec<Option<Approach>>>) -> &'a mut Self {
+    fn set_approach<'a>(&'a mut self, approach: Option<Vec<Option<Approach>>>) -> &'a mut Self {
         self.approach = approach;
         self
     }
 
-    pub fn set_exclude<'a>(&'a mut self, exclude: Option<Vec<CString>>) -> &'a mut Self {
+    fn set_exclude<'a>(&'a mut self, exclude: Option<Vec<CString>>) -> &'a mut Self {
         self.exclude = exclude;
         self
     }
