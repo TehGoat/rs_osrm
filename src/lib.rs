@@ -13,7 +13,7 @@ pub mod engine_config;
 pub mod general;
 pub mod match_api;
 pub mod nearest_api;
-pub mod route;
+pub mod route_api;
 pub mod table;
 pub mod tile;
 pub mod trip;

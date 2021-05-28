@@ -1,17 +1,13 @@
 use std::{ffi::CString, os::raw::c_int};
 
-use crate::{
-    general::{
+use crate::{Boolean, Osrm, Status, general::{
         c_structs::{c_approach::Approach, c_bearing::Bearing, c_general_options::CGeneralOptions},
         rs_structs::{
             coordinate::Coordinate,
             general_options::{GeneralOptions, GeneralOptionsTrait},
         },
         to_vec_ccoordinate,
-    },
-    route::{AnnotationsType, GeometriesType, OverviewType},
-    Boolean, Osrm, Status,
-};
+    }, route_api::{AnnotationsType, GeometriesType, OverviewType}};
 
 use super::{
     match_result::{CMatchResult, MatchResult},

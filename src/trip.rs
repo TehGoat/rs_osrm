@@ -4,10 +4,10 @@ use crate::general::c_structs::c_route::COsrmRoute;
 use crate::general::rs_structs::general_options::GeneralOptions;
 use crate::general::c_structs::c_general_options::CGeneralOptions;
 use crate::general::rs_structs::route::Route;
-use crate::route::AnnotationsType;
-use crate::route::GeometriesType;
-use crate::route::OverviewType;
 use crate::Osrm;
+use crate::route_api::AnnotationsType;
+use crate::route_api::GeometriesType;
+use crate::route_api::OverviewType;
 use crate::{Boolean, Status};
 use core::slice;
 use std::ffi::CStr;
@@ -206,8 +206,8 @@ impl TripResult {
                 slice::from_raw_parts(c_reasult.trips, c_reasult.number_of_trips as usize).to_vec()
             };
 
-            for route in routes_vec {
-                trips.push(route.to_route());
+            for route in routes_vec.iter() {
+                trips.push(Route::from(route));
             }
         }
 

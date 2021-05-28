@@ -19,16 +19,16 @@ pub(crate) struct COsrmRoute {
     pub(crate) number_of_legs: c_int,
 }
 
-impl COsrmRoute {
-    pub(crate) fn to_route(&self) -> Route {
+impl From<&COsrmRoute> for Route {
+    fn from(c_route: &COsrmRoute) -> Self {
         Route {
-            duration: self.duration,
-            distance: self.distance,
-            weight_name: c_string_to_option_string(self.weight_name),
-            weight: self.weight,
-            geometry: c_string_to_option_string(self.geometry),
-            legs: if self.legs != std::ptr::null_mut() {
-                unsafe { slice::from_raw_parts(self.legs, self.number_of_legs as usize).to_vec() }
+            duration: c_route.duration,
+            distance: c_route.distance,
+            weight_name: c_string_to_option_string(c_route.weight_name),
+            weight: c_route.weight,
+            geometry: c_string_to_option_string(c_route.geometry),
+            legs: if c_route.legs != std::ptr::null_mut() {
+                unsafe { slice::from_raw_parts(c_route.legs, c_route.number_of_legs as usize).to_vec() }
                     .iter()
                     .map(|leg| leg.into())
                     .collect()
