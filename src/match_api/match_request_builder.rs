@@ -88,8 +88,8 @@ impl MatchRequestBuilder {
         self
     }
 
-    pub fn build(&self) -> MatchRequest {
-        MatchRequest {
+    pub fn build(&self) -> Result<MatchRequest, String> {
+        Ok(MatchRequest {
             general_options: self.general_options.clone(),
             steps: self.steps,
             geometries: self.geometries.clone(),
@@ -100,7 +100,7 @@ impl MatchRequestBuilder {
             gaps: self.gaps.clone(),
             tidy: self.tidy,
             waypoints: self.waypoints.clone(),
-        }
+        })
     }
 }
 

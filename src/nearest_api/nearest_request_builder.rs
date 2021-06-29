@@ -22,11 +22,11 @@ impl NearestRequestBuilder {
         self
     }
 
-    pub fn build(&self) -> NearestRequest {
-        NearestRequest {
+    pub fn build(&self) -> Result<NearestRequest, String> {
+        Ok(NearestRequest {
             general_options: self.general_options.clone(),
             number_of_results: self.number_of_results,
-        }
+        })
     }
     
 }

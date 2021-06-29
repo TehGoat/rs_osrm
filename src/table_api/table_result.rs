@@ -1,85 +1,9 @@
-use crate::general::rs_structs::coordinate::Coordinate;
-use crate::general::rs_structs::waypoint::Waypoint;
-use crate::general::c_structs::c_waypoint::CWaypoint;
-use crate::general::rs_structs::general_options::GeneralOptions;
-use crate::general::c_structs::c_general_options::CGeneralOptions;
-use crate::{Osrm, Status};
-use core::slice;
-use std::ffi::CStr;
-use std::os::raw::{c_char, c_double, c_int, c_void};
+use std::{ffi::CStr, os::raw::{c_char, c_int}, slice};
 
-#[link(name = "c_osrm")]
-extern "C" {
-    fn table_result_destroy(result: *mut CTableResult);
-
-    fn osrm_table(
-        osrm: *mut c_void,
-        request: *mut CTableRequest,
-        result: *mut *mut CTableResult,
-    ) -> Status;
-}
+use crate::general::{c_structs::c_waypoint::CWaypoint, rs_structs::waypoint::Waypoint};
 
 #[repr(C)]
-#[derive(Clone)]
-pub enum Annotations {
-    NONE = 0,
-    DURATION = 1,
-    DISTANCE = 2,
-    ALL = 3,
-}
-
-#[repr(C)]
-#[derive(Clone)]
-pub enum FallbackCoordinate {
-    INPUT = 0,
-    SNAPPED = 1,
-}
-
-#[repr(C)]
-struct CTableRequest {
-    general_options: CGeneralOptions,
-    sources: *const c_int,
-    number_of_sources: c_int,
-    destinations: *const c_int,
-    number_of_destinations: c_int,
-    annotations: Annotations,
-    fallback_speed: c_double,
-    fallback_coordinate: FallbackCoordinate,
-    scale_factor: c_double,
-}
-
-impl CTableRequest {
-    fn new(request: &mut TableRequest) -> CTableRequest {
-        let mut c_request = CTableRequest {
-            general_options: (&mut request.general_options).into(),
-            sources: std::ptr::null(),
-            number_of_sources: 0,
-            destinations: std::ptr::null(),
-            number_of_destinations: 0,
-            annotations: request.annotations.clone(),
-            fallback_speed: request.fallback_speed,
-            fallback_coordinate: request.fallback_coordinate.clone(),
-            scale_factor: request.scale_factor,
-        };
-
-        if request.sources.is_some() {
-            let sources = request.sources.as_ref().unwrap();
-            c_request.sources = sources.as_ptr();
-            c_request.number_of_sources = sources.len() as c_int;
-        }
-
-        if request.destinations.is_some() {
-            let destinations = request.destinations.as_ref().unwrap();
-            c_request.destinations = destinations.as_ptr();
-            c_request.number_of_destinations = destinations.len() as c_int;
-        }
-
-        c_request
-    }
-}
-
-#[repr(C)]
-struct CTableResult {
+pub(crate) struct CTableResult {
     code: *const c_char,
     message: *const c_char,
     durations: *const f64,
@@ -100,7 +24,7 @@ pub struct TableResult {
 }
 
 impl TableResult {
-    fn new(c_reasult: &CTableResult) -> TableResult {
+    pub(crate) fn new(c_reasult: &CTableResult) -> TableResult {
         let mut code: Option<String> = None;
         if c_reasult.code != std::ptr::null_mut() {
             let c_code_buf: *const c_char = c_reasult.code;
@@ -198,49 +122,6 @@ impl TableResult {
             distances,
             sources,
             destinations,
-        }
-    }
-}
-
-pub struct TableRequest {
-    pub general_options: GeneralOptions,
-    pub sources: Option<Vec<i32>>,
-    pub destinations: Option<Vec<i32>>,
-    pub annotations: Annotations,
-    pub fallback_speed: f64,
-    pub fallback_coordinate: FallbackCoordinate,
-    pub scale_factor: f64,
-}
-
-impl TableRequest {
-    pub fn new(coordinates: &Vec<Coordinate>) -> TableRequest {
-        TableRequest {
-            general_options: GeneralOptions::new(coordinates),
-            sources: None,
-            destinations: None,
-            annotations: Annotations::DURATION,
-            fallback_speed: std::f64::MAX,
-            fallback_coordinate: FallbackCoordinate::INPUT,
-            scale_factor: 1.0,
-        }
-    }
-
-    pub fn run(&mut self, osrm: &Osrm) -> (Status, TableResult) {
-        unsafe {
-            let mut result: *mut CTableResult = std::ptr::null_mut();
-            let result_ptr: *mut *mut CTableResult = &mut result;
-
-            let status = osrm_table(
-                *osrm.config,
-                &mut CTableRequest::new(self) as *mut CTableRequest,
-                result_ptr,
-            );
-
-            let converted_result = TableResult::new(&(*result));
-
-            table_result_destroy(result);
-
-            (status, converted_result)
         }
     }
 }
