@@ -2,6 +2,7 @@ pub mod match_request;
 pub mod match_result;
 pub mod match_route;
 pub mod match_waypoint;
+pub mod match_request_builder;
 
 
 use crate::Status;

@@ -1,12 +1,10 @@
-use std::{ffi::CString, os::raw::c_int};
+use std::os::raw::c_int;
 
 use crate::{Boolean, Osrm, Status, general::{
-        c_structs::{c_approach::Approach, c_bearing::Bearing, c_general_options::CGeneralOptions},
+        c_structs::{c_general_options::CGeneralOptions},
         rs_structs::{
-            coordinate::Coordinate,
-            general_options::{GeneralOptions, GeneralOptionsTrait},
+            general_options::GeneralOptions,
         },
-        to_vec_ccoordinate,
     }, route_api::{AnnotationsType, GeometriesType, OverviewType}};
 
 use super::{
@@ -57,34 +55,19 @@ impl From<&mut MatchRequest> for CMatchRequest {
 }
 
 pub struct MatchRequest {
-    pub general_options: GeneralOptions,
-    pub steps: bool,
-    pub geometries: GeometriesType,
-    pub annotations: bool,
-    pub annotations_type: AnnotationsType,
-    pub overview: OverviewType,
-    pub timestamps: Option<Vec<i32>>,
-    pub gaps: Gap,
-    pub tidy: bool,
-    pub waypoints: Option<Vec<i32>>,
+    pub(crate) general_options: GeneralOptions,
+    pub(crate) steps: bool,
+    pub(crate) geometries: GeometriesType,
+    pub(crate) annotations: bool,
+    pub(crate) annotations_type: AnnotationsType,
+    pub(crate) overview: OverviewType,
+    pub(crate) timestamps: Option<Vec<i32>>,
+    pub(crate) gaps: Gap,
+    pub(crate) tidy: bool,
+    pub(crate) waypoints: Option<Vec<i32>>,
 }
 
 impl MatchRequest {
-    pub fn new(coordinates: &Vec<Coordinate>) -> MatchRequest {
-        MatchRequest {
-            general_options: GeneralOptions::new(coordinates),
-            steps: false,
-            geometries: GeometriesType::Polyline,
-            annotations: false,
-            annotations_type: AnnotationsType::None,
-            overview: OverviewType::Simplified,
-            timestamps: None,
-            gaps: Gap::Split,
-            tidy: false,
-            waypoints: None,
-        }
-    }
-
     pub fn run(&mut self, osrm: &Osrm) -> (Status, MatchResult) {
         unsafe {
             let mut result: *mut CMatchResult = std::ptr::null_mut();
@@ -105,44 +88,4 @@ impl MatchRequest {
     }
 }
 
-impl GeneralOptionsTrait for MatchRequest {
-    fn set_coordinate<'a>(&'a mut self, coordinates: &Vec<Coordinate>) -> &'a mut Self {
-        self.general_options.coordinate = to_vec_ccoordinate(coordinates);
-        self
-    }
 
-    fn set_bearings<'a>(&'a mut self, bearings: Option<Vec<Option<Bearing>>>) -> &'a mut Self {
-        self.general_options.bearings = bearings;
-        self
-    }
-
-    fn set_radiuses<'a>(&'a mut self, radiuses: Option<Vec<Option<f64>>>) -> &'a mut Self {
-        self.general_options.radiuses = radiuses;
-        self
-    }
-
-    fn set_generate_hints<'a>(&'a mut self, generate_hints: bool) -> &'a mut Self {
-        self.general_options.generate_hints = generate_hints;
-        self
-    }
-
-    fn set_skip_waypoints<'a>(&'a mut self, skip_waypoints: bool) -> &'a mut Self {
-        self.general_options.skip_waypoints = skip_waypoints;
-        self
-    }
-
-    fn set_hints<'a>(&'a mut self, hints: Option<Vec<CString>>) -> &'a mut Self {
-        self.general_options.hints = hints;
-        self
-    }
-
-    fn set_approach<'a>(&'a mut self, approach: Option<Vec<Option<Approach>>>) -> &'a mut Self {
-        self.general_options.approach = approach;
-        self
-    }
-
-    fn set_exclude<'a>(&'a mut self, exclude: Option<Vec<CString>>) -> &'a mut Self {
-        self.general_options.exclude = exclude;
-        self
-    }
-}

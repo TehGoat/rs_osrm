@@ -7,6 +7,7 @@ use self::{nearest_request::CNearestRequest, nearest_result::CNearestResult};
 pub mod nearest_request;
 pub mod nearest_result;
 pub mod nearest_waypoint;
+pub mod nearest_request_builder;
 
 #[link(name = "c_osrm")]
 extern "C" {

@@ -121,10 +121,7 @@ unsafe impl Send for Osrm {}
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        engine_config::engine_config_builder::EngineConfigBuilder,
-        nearest_api::nearest_request::NearestRequest, Osrm,
-    };
+    use crate::{Osrm, engine_config::engine_config_builder::EngineConfigBuilder, general::rs_structs::general_options::GeneralOptionsTrait, nearest_api::{nearest_request::NearestRequest, nearest_request_builder::NearestRequestBuilder}};
 
     #[test]
     fn it_works() {
@@ -137,8 +134,9 @@ mod tests {
     }
 
     fn asd(osrm: Osrm) {
-        let asd = NearestRequest::new(57.784715, 13.406278)
+        let asd = NearestRequestBuilder::new(57.784715, 13.406278)
             .set_generate_hints(true)
+            .build()
             .run(&osrm);
 
         println!("{}\n{:?}", asd.0, asd.1);
