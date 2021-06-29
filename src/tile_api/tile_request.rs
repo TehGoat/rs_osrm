@@ -1,20 +1,11 @@
-use crate::Osrm;
-use crate::Status;
-use std::os::raw::{c_int, c_void};
+use std::os::raw::c_int;
 
-#[link(name = "c_osrm")]
-extern "C" {
-    fn tile_result_destroy(result: *mut CTileResult);
+use crate::{Osrm, Status};
 
-    fn osrm_tile(
-        osrm: *mut c_void,
-        request: *mut CTileRequest,
-        result: *mut *mut CTileResult,
-    ) -> Status;
-}
+use super::{tile_result::{CTileResult, TileResult}, tile_result_destroy, osrm_tile};
 
 #[repr(C)]
-struct CTileRequest {
+pub(crate) struct CTileRequest {
     x: c_int,
     y: c_int,
     z: c_int,
@@ -58,34 +49,5 @@ impl TileRequest {
 
             (status, converted_result)
         }
-    }
-}
-
-#[repr(C)]
-struct CTileResult {
-    result: *const u8,
-    string_length: c_int,
-}
-
-pub struct TileResult {
-    pub result: Vec<u8>,
-}
-
-impl TileResult {
-    fn new(c_result: &CTileResult) -> TileResult {
-        let mut result = TileResult { result: Vec::new() };
-
-        let converted_result = unsafe {
-            std::slice::from_raw_parts(
-                c_result.result as *const u8,
-                c_result.string_length as usize,
-            )
-        };
-
-        for value in converted_result {
-            result.result.push(value.clone());
-        }
-
-        result
     }
 }

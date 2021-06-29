@@ -15,7 +15,7 @@ pub mod match_api;
 pub mod nearest_api;
 pub mod route_api;
 pub mod table_api;
-pub mod tile;
+pub mod tile_api;
 pub mod trip_api;
 
 #[link(name = "c_osrm")]
