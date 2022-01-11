@@ -57,5 +57,6 @@
         "variant": "cpp",
         "future": "cpp",
         "regex": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

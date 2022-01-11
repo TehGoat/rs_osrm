@@ -211,6 +211,7 @@ impl EngineConfig {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Osrm {
     config: Box<*mut c_void>,
 }

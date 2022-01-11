@@ -6,21 +6,21 @@ use std::os::raw::{c_char, c_double, c_int, c_short};
 use std::ptr::null;
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Bearing {
     pub bearing: c_short,
     pub range: c_short,
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Approach {
     UNRESTRICTED,
     CURB,
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct COsrmCoordinate {
     pub(crate) latitude: c_double,
     pub(crate) longitude: c_double,
@@ -35,7 +35,7 @@ impl COsrmCoordinate {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Coordinate {
     pub latitude: f64,
     pub longitude: f64,
@@ -580,7 +580,7 @@ impl CGeneralOptions {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GeneralOptions {
     pub coordinate: Vec<Coordinate>,
     pub(crate) c_coordinate: Vec<COsrmCoordinate>,

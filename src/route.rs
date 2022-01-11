@@ -21,7 +21,7 @@ extern "C" {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GeometriesType {
     Polyline,
     Polyline6,
@@ -29,7 +29,7 @@ pub enum GeometriesType {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum OverviewType {
     Simplified,
     Full,
@@ -37,7 +37,7 @@ pub enum OverviewType {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum AnnotationsType {
     None,
     Duration,
@@ -174,6 +174,7 @@ impl RouteResult {
     }
 }
 
+#[derive(Debug)]
 pub struct RouteRequest {
     pub general_options: GeneralOptions,
     pub steps: bool,
