@@ -88,6 +88,7 @@ struct CTableResult {
     number_of_destinations: c_int,
 }
 
+#[derive(Debug)]
 pub struct TableResult {
     pub code: Option<String>,
     pub message: Option<String>,
@@ -125,11 +126,14 @@ impl TableResult {
             };
 
             let mut rs_vec = Vec::new();
+
             for i in 0..c_reasult.number_of_sources {
                 let mut rs_tmp_vec = Vec::new();
+
                 for j in 0..c_reasult.number_of_destinations {
-                    rs_tmp_vec.push(durations_vec[(i * c_reasult.number_of_sources + j) as usize]);
+                    rs_tmp_vec.push(durations_vec[(i * c_reasult.number_of_destinations + j) as usize]);
                 }
+
                 rs_vec.push(rs_tmp_vec);
             }
 
@@ -149,7 +153,7 @@ impl TableResult {
             for i in 0..c_reasult.number_of_sources {
                 let mut rs_tmp_vec = Vec::new();
                 for j in 0..c_reasult.number_of_destinations {
-                    rs_tmp_vec.push(distances_vec[(i * c_reasult.number_of_sources + j) as usize]);
+                    rs_tmp_vec.push(distances_vec[(i * c_reasult.number_of_destinations + j) as usize]);
                 }
                 rs_vec.push(rs_tmp_vec);
             }
@@ -165,6 +169,7 @@ impl TableResult {
             };
 
             let mut rs_vec = Vec::new();
+
             for source in &sources_vec {
                 rs_vec.push(Waypoint::new(source));
             }
@@ -183,6 +188,7 @@ impl TableResult {
             };
 
             let mut rs_vec = Vec::new();
+
             for destination in &destinations_vec {
                 rs_vec.push(Waypoint::new(destination));
             }
@@ -241,5 +247,55 @@ impl TableRequest {
 
             (status, converted_result)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{general::Coordinate, Algorithm, EngineConfig, Osrm};
+
+    use super::{TableRequest, Annotations};
+
+    #[test]
+    fn it_works() {
+        let mut config = EngineConfig::new("/home/ronny/osrm/norway-latest.osrm");
+        config.use_shared_memory = false;
+        config.algorithm = Algorithm::MLD;
+
+        let osrm = Osrm::new(&mut config).unwrap();
+
+        let coord_vec = vec![
+            Coordinate {
+                latitude: 59.126593,
+                longitude: 9.649410,
+            },
+            Coordinate {
+                latitude: 59.130518,
+                longitude: 9.649194,
+            },
+            Coordinate {
+                latitude: 59.136615,
+                longitude: 9.656598,
+            },
+            Coordinate {
+                latitude: 59.140674,
+                longitude: 9.665294,
+            },
+            Coordinate {
+                latitude: 59.149458,
+                longitude: 9.666705,
+            },
+        ];
+
+        let mut request = TableRequest::new(&coord_vec);
+
+        request.annotations = Annotations::DURATION;
+
+        //request.sources = Some(vec![0,1,2]);
+        //request.destinations = Some(vec![0,1]);
+
+        let result = request.run(&osrm);
+
+        println!("{:#?}", result);
     }
 }

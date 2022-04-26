@@ -628,6 +628,7 @@ pub(crate) struct CWaypoint {
     pub(crate) location: [c_double; 2],
 }
 
+#[derive(Debug)]
 pub struct Waypoint {
     pub hint: Option<String>,
     pub distance: f64,
