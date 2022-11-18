@@ -54,7 +54,7 @@ impl TableResult {
             for i in 0..c_reasult.number_of_sources {
                 let mut rs_tmp_vec = Vec::new();
                 for j in 0..c_reasult.number_of_destinations {
-                    rs_tmp_vec.push(durations_vec[(i * c_reasult.number_of_sources + j) as usize]);
+                    rs_tmp_vec.push(durations_vec[(i * c_reasult.number_of_destinations + j) as usize]);
                 }
                 rs_vec.push(rs_tmp_vec);
             }
@@ -75,7 +75,7 @@ impl TableResult {
             for i in 0..c_reasult.number_of_sources {
                 let mut rs_tmp_vec = Vec::new();
                 for j in 0..c_reasult.number_of_destinations {
-                    rs_tmp_vec.push(distances_vec[(i * c_reasult.number_of_sources + j) as usize]);
+                    rs_tmp_vec.push(distances_vec[(i * c_reasult.number_of_destinations + j) as usize]);
                 }
                 rs_vec.push(rs_tmp_vec);
             }
