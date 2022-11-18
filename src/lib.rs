@@ -118,38 +118,4 @@ impl Drop for Osrm {
 }
 
 unsafe impl Send for Osrm {}
-
-#[cfg(test)]
-mod tests {
-    use crate::{Osrm, engine_config::engine_config_builder::EngineConfigBuilder, general::rs_structs::general_options::GeneralOptionsTrait, nearest_api::{nearest_request_builder::NearestRequestBuilder}};
-
-    #[test]
-    fn it_works() {
-        let osrm = qqq();
-
-        println!("{:?}", osrm.as_ref().err());
-        assert_eq!(osrm.is_ok(), true);
-
-        asd(osrm.ok().unwrap());
-    }
-
-    fn asd(osrm: Osrm) {
-        let asd = NearestRequestBuilder::new(57.784715, 13.406278)
-            .set_generate_hints(true)
-            .build()
-            .ok()
-            .unwrap()
-            .run(&osrm);
-
-        println!("{}\n{:?}", asd.0, asd.1);
-    }
-
-    fn qqq() -> Result<Osrm, String> {
-        EngineConfigBuilder::new("/home/ronny/osrm/sweden-latest.osrm")
-            .set_max_locations_map_matching(5)
-            .set_algorithm(crate::Algorithm::MLD)
-            .set_use_shared_memory(false)
-            .set_verbosity(Some("asd123"))
-            .build()
-    }
-}
+unsafe impl Sync for Osrm {}
