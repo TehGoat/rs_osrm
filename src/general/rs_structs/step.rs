@@ -14,7 +14,7 @@ pub struct Step {
     pub name: Option<String>,
     pub reference: Option<String>,
     pub pronunciation: Option<String>,
-    pub exits: Option<String>,
+    pub exits: i32,
     pub mode: Option<String>,
     pub maneuver: Option<Maneuver>,
     pub intersections: Vec<Intersections>,
@@ -33,11 +33,11 @@ impl From<&COsrmStep> for Step {
             name: c_string_to_option_string(c_step.name),
             reference: c_string_to_option_string(c_step.reference),
             pronunciation: c_string_to_option_string(c_step.pronunciation),
-            exits: c_string_to_option_string(c_step.exits),
-            mode: c_string_to_option_string(c_step.exits),
-            rotary_name: c_string_to_option_string(c_step.exits),
-            rotary_pronunciation: c_string_to_option_string(c_step.exits),
-            driving_side: c_string_to_option_string(c_step.exits),
+            exits: c_step.exits,
+            mode: c_string_to_option_string(c_step.mode),
+            rotary_name: c_string_to_option_string(c_step.rotary_name),
+            rotary_pronunciation: c_string_to_option_string(c_step.rotary_pronunciation),
+            driving_side: c_string_to_option_string(c_step.driving_side),
             maneuver: if c_step.metadata != std::ptr::null_mut() {
                 unsafe {let maneuver: Maneuver = (&(*c_step.metadata)).into(); maneuver }.into()
             } else {

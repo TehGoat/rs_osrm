@@ -2,6 +2,7 @@ use std::{ptr::null};
 
 use crate::general::{c_string_to_string, c_structs::c_waypoint::CWaypoint};
 
+#[derive(Debug)]
 pub struct Waypoint {
     pub hint: Option<String>,
     pub distance: f64,

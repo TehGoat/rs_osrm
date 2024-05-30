@@ -1,6 +1,7 @@
 use super::route_leg::RouteLeg;
 
 
+#[derive(Debug)]
 pub struct Route {
     pub duration: f64,
     pub distance: f64,

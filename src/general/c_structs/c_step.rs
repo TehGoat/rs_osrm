@@ -12,7 +12,7 @@ pub(crate) struct COsrmStep {
     pub(crate) name: *const c_char,
     pub(crate) reference: *const c_char,
     pub(crate) pronunciation: *const c_char,
-    pub(crate) exits: *const c_char,
+    pub(crate) exits: c_int,
     pub(crate) mode: *const c_char,
     pub(crate) metadata: *const COsrmManeuver,
     pub(crate) intersections: *const COsrmIntersections,
