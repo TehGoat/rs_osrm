@@ -83,12 +83,12 @@ pub fn testI() {
 
     let mut request = RouteRequestBuilder::new(&vec![
         Coordinate {
-            latitude: 57.805516,
-            longitude: 13.45584
+            latitude: 57.8045426,
+            longitude: 13.4635403
         },
         Coordinate {
-            latitude: 57.805516,
-            longitude: 13.55584
+            latitude: 57.7924,
+            longitude: 12.146409
         },
     ]);
 

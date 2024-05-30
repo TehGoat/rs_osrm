@@ -7,6 +7,7 @@ pub struct Maneuver {
     pub coordinate: Coordinate,
     pub maneuver_type: String,
     pub modifer: Option<String>,
+    pub exit: i32,
 }
 
 impl From<&COsrmManeuver> for Maneuver {
@@ -17,6 +18,7 @@ impl From<&COsrmManeuver> for Maneuver {
             coordinate: (&c_maneuver.coordinate).into(),
             maneuver_type: c_string_to_string(c_maneuver.maneuver_type),
             modifer: c_string_to_option_string(c_maneuver.modifer),
+            exit: c_maneuver.exit,
         }
     }
 }

@@ -10,4 +10,5 @@ pub(crate) struct COsrmManeuver {
     pub(crate) coordinate: COsrmCoordinate,
     pub(crate) maneuver_type: *const c_char,
     pub(crate) modifer: *const c_char,
+    pub(crate) exit: c_int,
 }
